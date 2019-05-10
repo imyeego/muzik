@@ -1,6 +1,8 @@
 package com.liuzhao.muzik.ui.activity;
 
+import android.content.Context;
 import android.content.Intent;
+import android.net.wifi.WifiManager;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
@@ -16,10 +18,12 @@ import com.liuzhao.muzik.R;
 import com.liuzhao.muzik.common.download.DownloadManager;
 import com.liuzhao.muzik.model.bean.MovieEntity;
 import com.liuzhao.muzik.model.bean.NewsEntity;
+import com.liuzhao.muzik.model.bean.Student;
 import com.liuzhao.muzik.model.event.FirstEvent;
 import com.liuzhao.muzik.model.event.SecondEvent;
 import com.liuzhao.muzik.presenter.NewsContract;
 import com.liuzhao.muzik.presenter.NewsPresenter;
+import com.liuzhao.muzik.service.NetworkService;
 import com.liuzhao.muzik.ui.base.BaseActivity;
 import com.liuzhao.muzik.utils.Counter;
 import com.liuzhao.okevent.OkEvent;
@@ -27,6 +31,12 @@ import com.liuzhao.okevent.Subscribe;
 import com.liuzhao.okevent.ThreadMode;
 
 
+import org.xutils.DbManager;
+import org.xutils.ex.DbException;
+import org.xutils.x;
+
+import java.io.File;
+import java.io.IOException;
 import java.util.List;
 
 public class MainActivity extends BaseActivity<NewsPresenter> implements NewsContract.View, DownloadManager.ObserverProgress {
@@ -46,6 +56,32 @@ public class MainActivity extends BaseActivity<NewsPresenter> implements NewsCon
     Button bnPlaylist;
     private DownloadManager manager;
     private Counter counter;
+    DbManager dbManager;
+
+    DbManager.DaoConfig daoConfig = new DbManager.DaoConfig()
+            .setDbName("student.db")
+            // 不设置dbDir时, 默认存储在app的私有目录.
+            .setDbDir(new File("/sdcard")) // "sdcard"的写法并非最佳实践, 这里为了简单, 先这样写了.
+            .setDbVersion(1)
+            .setAllowTransaction(true)
+            .setDbOpenListener(new DbManager.DbOpenListener() {
+                @Override
+                public void onDbOpened(DbManager db) {
+                    // 开启WAL, 对写入加速提升巨大
+//                    db.getDatabase().enableWriteAheadLogging();
+                }
+            })
+            .setDbUpgradeListener(new DbManager.DbUpgradeListener() {
+                @Override
+                public void onUpgrade(DbManager db, int oldVersion, int newVersion) {
+                    // TODO: ...
+                    // db.addColumn(...);
+                    // db.dropTable(...);
+                    // ...
+                    // or
+                    // db.dropDb();
+                }
+            });
 
     @Override
     protected void initView() {
@@ -54,6 +90,10 @@ public class MainActivity extends BaseActivity<NewsPresenter> implements NewsCon
         ViewFinder.inject(this);
         manager = DownloadManager.getInstance();
         manager.setObserverProgress(this);
+        openWifi(context);
+        saveFirstData();
+//        Intent intent = new Intent(this, NetworkService.class);
+//        startService(intent);
     }
 
     @OnClick(R.id.bn_hello)
@@ -81,10 +121,34 @@ public class MainActivity extends BaseActivity<NewsPresenter> implements NewsCon
         startActivity(intent);
     }
 
+    private void saveFirstData() {
+        dbManager = x.getDb(daoConfig);
 
+        Student student = new Student();
+        student.setId(1001);
+        student.setAge((short) 14);
+        student.setName("刘钊");
+        student.setGender((byte) 2);
+        student.setClasses((byte) 8);
+        student.setGrade((byte) 2);
+        student.setSchool("北京101中学");
+        try {
+            dbManager.save(student);
+        } catch (DbException e) {
+            e.printStackTrace();
+        }
+
+        try {
+            long count = dbManager.selector(Student.class).count();
+            Toast.makeText(context, "" + count, Toast.LENGTH_SHORT).show();
+
+        } catch (DbException e) {
+            e.printStackTrace();
+        }
+    }
 
     @Subscribe(threadMode = ThreadMode.POSTING)
-    void onText(FirstEvent event){
+    public void onText(FirstEvent event){
         try {
             Thread.sleep(5000);
         } catch (InterruptedException e) {
@@ -95,7 +159,7 @@ public class MainActivity extends BaseActivity<NewsPresenter> implements NewsCon
     }
 
     @Subscribe(threadMode = ThreadMode.POSTING)
-    void onBar(SecondEvent event){
+    public void onBar(SecondEvent event){
         Log.e(TAG, event.getMsg() + " " + Thread.currentThread().getName());
         Toast.makeText(getApplicationContext(), event.getMsg(), Toast.LENGTH_SHORT).show();
 
@@ -143,6 +207,21 @@ public class MainActivity extends BaseActivity<NewsPresenter> implements NewsCon
         presenter.unsubscribe();
         counter.clear();
         OkEvent.getInstance().unregister(this);
+//        Intent intent = new Intent(this, NetworkService.class);
+//        stopService(intent);
+        try {
+            dbManager.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
         super.onDestroy();
+    }
+
+    public static void openWifi(Context context) {
+        WifiManager wifiManager = (WifiManager) context.getApplicationContext().getSystemService(Context.WIFI_SERVICE);
+        if (wifiManager != null && !wifiManager.isWifiEnabled()) {
+            wifiManager.setWifiEnabled(true);
+        }
+        Log.e("Wi-Fi 状态", "打开...");
     }
 }
