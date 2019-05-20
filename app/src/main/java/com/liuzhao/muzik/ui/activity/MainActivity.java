@@ -19,6 +19,7 @@ import com.liuzhao.muzik.common.download.DownloadManager;
 import com.liuzhao.muzik.model.bean.MovieEntity;
 import com.liuzhao.muzik.model.bean.NewsEntity;
 import com.liuzhao.muzik.model.bean.Student;
+import com.liuzhao.muzik.model.bean.User;
 import com.liuzhao.muzik.model.event.FirstEvent;
 import com.liuzhao.muzik.model.event.SecondEvent;
 import com.liuzhao.muzik.presenter.NewsContract;
@@ -37,7 +38,9 @@ import org.xutils.x;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class MainActivity extends BaseActivity<NewsPresenter> implements NewsContract.View, DownloadManager.ObserverProgress {
 
@@ -56,32 +59,19 @@ public class MainActivity extends BaseActivity<NewsPresenter> implements NewsCon
     Button bnPlaylist;
     private DownloadManager manager;
     private Counter counter;
-    DbManager dbManager;
-
-    DbManager.DaoConfig daoConfig = new DbManager.DaoConfig()
-            .setDbName("student.db")
-            // 不设置dbDir时, 默认存储在app的私有目录.
-            .setDbDir(new File("/sdcard")) // "sdcard"的写法并非最佳实践, 这里为了简单, 先这样写了.
-            .setDbVersion(1)
-            .setAllowTransaction(true)
-            .setDbOpenListener(new DbManager.DbOpenListener() {
-                @Override
-                public void onDbOpened(DbManager db) {
-                    // 开启WAL, 对写入加速提升巨大
-//                    db.getDatabase().enableWriteAheadLogging();
-                }
-            })
-            .setDbUpgradeListener(new DbManager.DbUpgradeListener() {
-                @Override
-                public void onUpgrade(DbManager db, int oldVersion, int newVersion) {
-                    // TODO: ...
-                    // db.addColumn(...);
-                    // db.dropTable(...);
-                    // ...
-                    // or
-                    // db.dropDb();
-                }
-            });
+//    DbManager dbManager;
+//
+//    DbManager.DaoConfig daoConfig = new DbManager.DaoConfig()
+//            .setDbName("student.db")
+//            // 不设置dbDir时, 默认存储在app的私有目录.
+//            .setDbDir(new File("/sdcard")) // "sdcard"的写法并非最佳实践, 这里为了简单, 先这样写了.
+//            .setDbVersion(1)
+//            .setAllowTransaction(true)
+//            .setDbOpenListener(db -> {
+////                    db.getDatabase().enableWriteAheadLogging();
+//            })
+//            .setDbUpgradeListener((db, oldVersion, newVersion) -> {
+//            });
 
     @Override
     protected void initView() {
@@ -91,14 +81,16 @@ public class MainActivity extends BaseActivity<NewsPresenter> implements NewsCon
         manager = DownloadManager.getInstance();
         manager.setObserverProgress(this);
         openWifi(context);
-        saveFirstData();
+//        saveFirstData();
 //        Intent intent = new Intent(this, NetworkService.class);
 //        startService(intent);
     }
 
     @OnClick(R.id.bn_hello)
     void onStart(View view){
-        manager.start();
+        Map<String, Object> map = new HashMap<>();
+        map.put("username", "liuzhao");
+        presenter.onLogin(map);
     }
 
     @OnClick(R.id.bn_stop)
@@ -121,31 +113,31 @@ public class MainActivity extends BaseActivity<NewsPresenter> implements NewsCon
         startActivity(intent);
     }
 
-    private void saveFirstData() {
-        dbManager = x.getDb(daoConfig);
-
-        Student student = new Student();
-        student.setId(1001);
-        student.setAge((short) 14);
-        student.setName("刘钊");
-        student.setGender((byte) 2);
-        student.setClasses((byte) 8);
-        student.setGrade((byte) 2);
-        student.setSchool("北京101中学");
-        try {
-            dbManager.save(student);
-        } catch (DbException e) {
-            e.printStackTrace();
-        }
-
-        try {
-            long count = dbManager.selector(Student.class).count();
-            Toast.makeText(context, "" + count, Toast.LENGTH_SHORT).show();
-
-        } catch (DbException e) {
-            e.printStackTrace();
-        }
-    }
+//    private void saveFirstData() {
+//        dbManager = x.getDb(daoConfig);
+//
+//        Student student = new Student();
+//        student.setId(1001);
+//        student.setAge((short) 14);
+//        student.setName("刘钊");
+//        student.setGender((byte) 2);
+//        student.setClasses((byte) 8);
+//        student.setGrade((byte) 2);
+//        student.setSchool("北京101中学");
+//        try {
+//            dbManager.save(student);
+//        } catch (DbException e) {
+//            e.printStackTrace();
+//        }
+//
+//        try {
+//            long count = dbManager.selector(Student.class).count();
+//            Toast.makeText(context, "" + count, Toast.LENGTH_SHORT).show();
+//
+//        } catch (DbException e) {
+//            e.printStackTrace();
+//        }
+//    }
 
     @Subscribe(threadMode = ThreadMode.POSTING)
     public void onText(FirstEvent event){
@@ -198,6 +190,11 @@ public class MainActivity extends BaseActivity<NewsPresenter> implements NewsCon
     }
 
     @Override
+    public void onLogin(User user) {
+        Toast.makeText(context, user.getUsername(), Toast.LENGTH_SHORT).show();
+    }
+
+    @Override
     public void onError() {
 
     }
@@ -209,11 +206,6 @@ public class MainActivity extends BaseActivity<NewsPresenter> implements NewsCon
         OkEvent.getInstance().unregister(this);
 //        Intent intent = new Intent(this, NetworkService.class);
 //        stopService(intent);
-        try {
-            dbManager.close();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
         super.onDestroy();
     }
 

@@ -4,14 +4,17 @@ import android.content.Context;
 import android.util.Log;
 import android.widget.Toast;
 
+import com.liuzhao.muzik.common.EntityCallback;
 import com.liuzhao.muzik.common.ICallback;
 import com.liuzhao.muzik.common.RetrofitClient;
 import com.liuzhao.muzik.model.bean.Movie;
 import com.liuzhao.muzik.model.bean.MovieEntity;
 import com.liuzhao.muzik.model.bean.News;
 import com.liuzhao.muzik.model.bean.NewsEntity;
+import com.liuzhao.muzik.model.bean.User;
 
 import java.util.List;
+import java.util.Map;
 
 import rx.Subscription;
 
@@ -69,9 +72,24 @@ public class NewsPresenter extends NewsContract.Presenter {
     }
 
     @Override
+    public void onLogin(Map<String, Object> map) {
+        RetrofitClient.getInstance().postMap("user/login", map, new EntityCallback<User>() {
+            @Override
+            public void onSuccess(User result) {
+                view.onLogin(result);
+            }
+
+            @Override
+            public void onFailure() {
+                view.onError();
+            }
+        });
+    }
+
+    @Override
     public void subscribe() {
 //        onLoadNews();
-        onLoadMovies();
+//        onLoadMovies();
     }
 
     @Override

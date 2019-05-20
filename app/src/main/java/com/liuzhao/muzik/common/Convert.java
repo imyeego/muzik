@@ -48,4 +48,17 @@ public class Convert {
         return new Gson().fromJson(responseStr, jsonType);
 
     }
+
+    public static <T> T parseResponseT(ResponseBody response, EntityCallback<T> callback) {
+        String responseStr = null;
+        Type type = null;
+        try {
+            responseStr = response.string();
+            Type[] types = callback.getClass().getGenericInterfaces();
+            type = ((ParameterizedType)types[0]).getActualTypeArguments()[0];
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return new Gson().fromJson(responseStr, type);
+    }
 }

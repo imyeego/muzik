@@ -4,6 +4,7 @@ import com.liuzhao.muzik.app.Constants;
 import com.liuzhao.muzik.model.bean.News;
 
 import java.util.List;
+import java.util.Map;
 
 import okhttp3.OkHttpClient;
 import okhttp3.ResponseBody;
@@ -49,7 +50,7 @@ public class RetrofitClient {
                 .build();
         retrofitClient = new RetrofitClient();
         retrofit = new Retrofit.Builder()
-                .baseUrl(Constants.DOUBAN_TOP250)
+                .baseUrl(Constants.MY_URL)
                 .addConverterFactory(GsonConverterFactory.create())
                 .addCallAdapterFactory(RxJavaCallAdapterFactory.create())
                 .client(okHttpClient)
@@ -95,6 +96,28 @@ public class RetrofitClient {
                     @Override
                     public void onNext(List<T> ts) {
                         callback.onSuccess(ts);
+                    }
+                });
+    }
+
+    public <T> Subscription postMap(String url, Map<String, Object> map, EntityCallback<T> callback) {
+        return api.postMap(url, map).subscribeOn(Schedulers.io())
+                .map(responseBody -> Convert.parseResponseT(responseBody, callback))
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(new Observer<T>() {
+                    @Override
+                    public void onCompleted() {
+
+                    }
+
+                    @Override
+                    public void onError(Throwable e) {
+                        callback.onFailure();
+                    }
+
+                    @Override
+                    public void onNext(T t) {
+                        callback.onSuccess(t);
                     }
                 });
     }
