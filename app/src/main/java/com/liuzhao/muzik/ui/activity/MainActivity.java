@@ -15,6 +15,7 @@ import com.liuzhao.ioc_annotations.BindView;
 import com.liuzhao.ioc_annotations.OnClick;
 import com.liuzhao.ioc_api.ViewFinder;
 import com.liuzhao.muzik.R;
+import com.liuzhao.muzik.annotation.SingleClick;
 import com.liuzhao.muzik.common.download.DownloadManager;
 import com.liuzhao.muzik.model.bean.MovieEntity;
 import com.liuzhao.muzik.model.bean.NewsEntity;
@@ -59,6 +60,7 @@ public class MainActivity extends BaseActivity<NewsPresenter> implements NewsCon
     Button bnPlaylist;
     private DownloadManager manager;
     private Counter counter;
+    private int i = 0;
 //    DbManager dbManager;
 //
 //    DbManager.DaoConfig daoConfig = new DbManager.DaoConfig()
@@ -87,10 +89,12 @@ public class MainActivity extends BaseActivity<NewsPresenter> implements NewsCon
     }
 
     @OnClick(R.id.bn_hello)
+    @SingleClick
     void onStart(View view){
-        Map<String, Object> map = new HashMap<>();
-        map.put("username", "liuzhao");
-        presenter.onLogin(map);
+//        Map<String, Object> map = new HashMap<>();
+//        map.put("username", "liuzhao");
+//        presenter.onLogin(map);
+        Log.e(TAG, "" + (++i));
     }
 
     @OnClick(R.id.bn_stop)

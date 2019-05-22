@@ -1,4 +1,5 @@
 apply plugin: 'com.android.application'
+apply plugin: 'com.hujiang.android-aspectjx'
 
 android {
     compileSdkVersion 28
@@ -48,4 +49,5 @@ dependencies {
     implementation project(':ioc-api')
     implementation project(':ioc-annotations')
     implementation project(':okevent')
+    implementation 'org.aspectj:aspectjrt:1.8.13'
 }
