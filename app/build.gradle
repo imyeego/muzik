@@ -1,5 +1,6 @@
 apply plugin: 'com.android.application'
 apply plugin: 'com.hujiang.android-aspectjx'
+apply plugin: 'kotlin-android'
 
 android {
     compileSdkVersion 28
@@ -36,6 +37,7 @@ dependencies {
     androidTestImplementation 'com.android.support.test:runner:1.0.2'
     androidTestImplementation 'com.android.support.test.espresso:espresso-core:3.0.2'
     implementation 'com.squareup.okhttp3:okhttp:3.10.0'
+    implementation "org.jetbrains.kotlin:kotlin-stdlib-jre7:$kotlin_version"
     implementation 'io.reactivex:rxjava:1.1.0'
     implementation 'io.reactivex:rxandroid:1.1.0'
     implementation 'com.squareup.retrofit2:retrofit:2.0.0-beta4'
@@ -50,4 +52,5 @@ dependencies {
     implementation project(':ioc-annotations')
     implementation project(':okevent')
     implementation 'org.aspectj:aspectjrt:1.8.13'
+    implementation 'com.github.huangyanbin:SmartTable:2.2.0'
 }

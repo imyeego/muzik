@@ -1,5 +1,9 @@
 package com.liuzhao.muzik.app;
 
+import android.os.Environment;
+
+import java.io.File;
+
 /**
  *
  * @author liuzhao
@@ -17,6 +21,8 @@ public class Constants {
     public static String DOUBAN_TOP250 = "https://api.douban.com/v2/movie/";
 
     public static final String MY_URL = "http://192.168.1.6:8080/";
+
+    public static final String PATH = Environment.getExternalStorageDirectory() + File.separator + APP_NAME;
 
 
 }

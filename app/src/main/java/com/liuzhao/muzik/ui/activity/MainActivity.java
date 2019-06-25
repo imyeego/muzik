@@ -2,6 +2,11 @@ package com.liuzhao.muzik.ui.activity;
 
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.Canvas;
+import android.graphics.Color;
+import android.graphics.Paint;
+import android.graphics.Point;
+import android.graphics.Rect;
 import android.net.wifi.WifiManager;
 import android.util.Log;
 import android.view.View;
@@ -11,12 +16,26 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 
+import com.bin.david.form.core.SmartTable;
+import com.bin.david.form.core.TableConfig;
+import com.bin.david.form.data.CellInfo;
+import com.bin.david.form.data.column.Column;
+import com.bin.david.form.data.format.bg.BaseBackgroundFormat;
+import com.bin.david.form.data.format.bg.BaseCellBackgroundFormat;
+import com.bin.david.form.data.format.bg.IBackgroundFormat;
+import com.bin.david.form.data.format.bg.ICellBackgroundFormat;
+import com.bin.david.form.data.style.FontStyle;
+import com.bin.david.form.data.style.LineStyle;
+import com.google.gson.GsonBuilder;
 import com.liuzhao.ioc_annotations.BindView;
 import com.liuzhao.ioc_annotations.OnClick;
 import com.liuzhao.ioc_api.ViewFinder;
 import com.liuzhao.muzik.R;
 import com.liuzhao.muzik.annotation.SingleClick;
+import com.liuzhao.muzik.app.Constants;
+import com.liuzhao.muzik.common.OkioSocket;
 import com.liuzhao.muzik.common.download.DownloadManager;
+import com.liuzhao.muzik.model.bean.Exam;
 import com.liuzhao.muzik.model.bean.MovieEntity;
 import com.liuzhao.muzik.model.bean.NewsEntity;
 import com.liuzhao.muzik.model.bean.Student;
@@ -39,6 +58,7 @@ import org.xutils.x;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -58,22 +78,31 @@ public class MainActivity extends BaseActivity<NewsPresenter> implements NewsCon
 
     @BindView(R.id.bn_playlist)
     Button bnPlaylist;
+    @BindView(R.id.st_data)
+    SmartTable<Exam> table;
     private DownloadManager manager;
     private Counter counter;
     private int i = 0;
-//    DbManager dbManager;
-//
-//    DbManager.DaoConfig daoConfig = new DbManager.DaoConfig()
-//            .setDbName("student.db")
-//            // 不设置dbDir时, 默认存储在app的私有目录.
-//            .setDbDir(new File("/sdcard")) // "sdcard"的写法并非最佳实践, 这里为了简单, 先这样写了.
-//            .setDbVersion(1)
-//            .setAllowTransaction(true)
-//            .setDbOpenListener(db -> {
-////                    db.getDatabase().enableWriteAheadLogging();
-//            })
-//            .setDbUpgradeListener((db, oldVersion, newVersion) -> {
-//            });
+    private String[] kms = new String[]{"文科综合", "理科综合", "英语"};
+    private int[] kcCount = new int[]{4, 18, 32};
+    private int[] bagCount = new int[]{4, 18, 32};
+    private int[] sparedPaperCount = new int[]{1, 1, 1};
+    private int[] sparedCardCount = new int[]{1, 1, 1};
+    private int[] total = new int[]{6, 20, 24};
+    String str = "[{\"SN\":\"54:E1:AD:F1:8E:D5\",\"aim\":\"download_sfrz\",\"version\":\"0.1\"}]";
+    String str1 = "[{\"SN\":\"54:E1:AD:F1:8E:D5\",\"aim\":\"upload_sfrz_result\",\"version\":\"0.1\"},{\"zjhm\":\"610124198810271029\",\"rzsj\":\"2019-07-08 08:25:25\",\"rzfs\":\"12\",\"rzjg\":\"1\",\"devSN\":\"\",\"zwppl\":\"\", \"rlppl\":\"0.36\",\"rlzp\":\"\",\"zwtp\":\"\",\"sfzzp\":\"\"}]";
+
+    private List<Exam> list = new ArrayList<>();
+    private OkioSocket socket;
+    private DbManager dbManager;
+    private DbManager.DaoConfig config = new DbManager.DaoConfig()
+            .setDbName("student.db")
+            .setDbDir(new File(Constants.PATH))
+            .setDbVersion(1)
+            .setAllowTransaction(true)
+            .setDbUpgradeListener((db, oldVersion, newVersion) -> {
+
+            });
 
     @Override
     protected void initView() {
@@ -83,6 +112,40 @@ public class MainActivity extends BaseActivity<NewsPresenter> implements NewsCon
         manager = DownloadManager.getInstance();
         manager.setObserverProgress(this);
         openWifi(context);
+//        socket = new OkioSocket("172.16.41.84", 12789);
+        socket = new OkioSocket("222.91.163.154", 12789);
+//        socket.setCallback(new OkioSocket.Callback() {
+//            @Override
+//            public void onSuccess(String response) {
+//                Toast.makeText(context, "" + response.length(), Toast.LENGTH_SHORT).show();
+//            }
+//        });
+        loadData();
+        table.getConfig().setShowXSequence(false);
+        table.getConfig().setShowTableTitle(false);
+        table.getConfig().setColumnTitleHorizontalPadding(0);
+        table.getConfig().setShowYSequence(false);
+        table.getConfig().setContentCellBackgroundFormat(new ICellBackgroundFormat<CellInfo>() {
+            @Override
+            public void drawBackground(Canvas canvas, Rect rect, CellInfo column, Paint paint) {
+                paint.setColor(Color.parseColor("#ededed"));
+                canvas.drawRect(rect, paint);
+            }
+
+            @Override
+            public int getTextColor(CellInfo column) {
+                return Color.parseColor("#191970");
+            }
+        });
+
+        FontStyle fontStyle = new FontStyle(14, Color.parseColor("#000000"));
+        table.getConfig().setColumnTitleStyle(fontStyle);
+
+        LineStyle lineStyle = new LineStyle(2, Color.parseColor("#191970"));
+        table.getConfig().setContentGridStyle(lineStyle);
+        table.getConfig().setColumnTitleGridStyle(lineStyle);
+
+        table.setData(list);
 //        saveFirstData();
 //        Intent intent = new Intent(this, NetworkService.class);
 //        startService(intent);
@@ -94,20 +157,46 @@ public class MainActivity extends BaseActivity<NewsPresenter> implements NewsCon
 //        Map<String, Object> map = new HashMap<>();
 //        map.put("username", "liuzhao");
 //        presenter.onLogin(map);
-        Log.e(TAG, "" + (++i));
+
+        socket.send(str, new OkioSocket.Callback() {
+            @Override
+            public void onSuccess(String response) {
+                Toast.makeText(context, "" + response.length(), Toast.LENGTH_SHORT).show();
+            }
+
+            @Override
+            public void onFailure(String msg) {
+                Toast.makeText(context, msg, Toast.LENGTH_SHORT).show();
+
+            }
+        });
     }
 
     @OnClick(R.id.bn_stop)
     void onStop(View view){
-        if ((counter.getCount() & 1) == 0){
-            manager.pause();
-            btnStop.setText("restart");
-        }
-        else{
-            manager.reStart();
-            btnStop.setText("stop");
-        }
-        counter.count();
+//        if ((counter.getCount() & 1) == 0){
+//            manager.pause();
+//            btnStop.setText("restart");
+//        }
+//        else{
+//            manager.reStart();
+//            btnStop.setText("stop");
+//        }
+//        counter.count();
+
+        socket.send(str1, new OkioSocket.Callback() {
+            @Override
+            public void onSuccess(String response) {
+                Toast.makeText(context, "" + response.length(), Toast.LENGTH_SHORT).show();
+            }
+
+            @Override
+            public void onFailure(String msg) {
+                Toast.makeText(context, msg, Toast.LENGTH_SHORT).show();
+
+            }
+        });
+
     }
 
     @OnClick(R.id.bn_playlist)
@@ -117,31 +206,49 @@ public class MainActivity extends BaseActivity<NewsPresenter> implements NewsCon
         startActivity(intent);
     }
 
-//    private void saveFirstData() {
-//        dbManager = x.getDb(daoConfig);
-//
-//        Student student = new Student();
-//        student.setId(1001);
-//        student.setAge((short) 14);
-//        student.setName("刘钊");
-//        student.setGender((byte) 2);
-//        student.setClasses((byte) 8);
-//        student.setGrade((byte) 2);
-//        student.setSchool("北京101中学");
-//        try {
-//            dbManager.save(student);
-//        } catch (DbException e) {
-//            e.printStackTrace();
-//        }
-//
-//        try {
-//            long count = dbManager.selector(Student.class).count();
-//            Toast.makeText(context, "" + count, Toast.LENGTH_SHORT).show();
-//
-//        } catch (DbException e) {
-//            e.printStackTrace();
-//        }
-//    }
+    private void saveFirstData() {
+        dbManager = x.getDb(config);
+
+        Student student = new Student();
+        student.setAge((short) 14);
+        student.setName("刘钊");
+        student.setGender((byte) 2);
+        student.setClasses((byte) 8);
+        student.setGrade((byte) 2);
+        student.setSchool("北京101中学");
+//        student.setUploaded("");
+        try {
+            dbManager.save(student);
+        } catch (DbException e) {
+            e.printStackTrace();
+        }
+
+        try {
+            Student s = dbManager.selector(Student.class).where("name", "=", "刘钊").findFirst();
+            GsonBuilder builder = new GsonBuilder();
+            builder.excludeFieldsWithoutExposeAnnotation();
+            builder.serializeNulls();
+            String json = builder.create().toJson(s);
+            Toast.makeText(context, json, Toast.LENGTH_SHORT).show();
+
+        } catch (DbException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void loadData() {
+        list.clear();
+        for (int j = 0; j < 3; j++) {
+            Exam exam = new Exam();
+            exam.setKm(kms[j]);
+            exam.setKcCount(kcCount[j]);
+            exam.setBagCount(bagCount[j]);
+            exam.setSparedPaperCount(sparedPaperCount[j]);
+            exam.setSparedCardCount(sparedCardCount[j]);
+            exam.setTotal(total[j]);
+            list.add(exam);
+        }
+    }
 
     @Subscribe(threadMode = ThreadMode.POSTING)
     public void onText(FirstEvent event){
