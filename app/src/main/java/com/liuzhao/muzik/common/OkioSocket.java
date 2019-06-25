@@ -39,17 +39,16 @@ public class OkioSocket {
     private Handler handler = new Handler(Looper.getMainLooper()) {
         @Override
         public void handleMessage(Message msg) {
+            Call call = (Call) msg.obj;
             switch (msg.what) {
                 case 0x1e:
-                    Call call = (Call) msg.obj;
                     if (call != null) {
                         call.getCallback().onSuccess(call.getResponse());
                     }
                     break;
                 case 0x2e:
-                    Call call_ = (Call) msg.obj;
-                    if (call_ != null) {
-                        call_.getCallback().onFailure(call_.getResponse());
+                    if (call != null) {
+                        call.getCallback().onFailure(call.getResponse());
                     }
                     break;
             }
