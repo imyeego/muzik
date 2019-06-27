@@ -10,6 +10,7 @@ import java.io.File;
  */
 public class Constants {
     public static String APP_NAME = "muzik";
+    public static String README = "readme.txt";
 
     //聚合数据基地址
     public static String JUHE_BASEURL = "http://v.juhe.cn";
@@ -23,6 +24,9 @@ public class Constants {
     public static final String MY_URL = "http://192.168.1.6:8080/";
 
     public static final String PATH = Environment.getExternalStorageDirectory() + File.separator + APP_NAME;
+
+    public static final String DATA_PATH = Constants.PATH + File.separator + "data.txt";
+
 
 
 }

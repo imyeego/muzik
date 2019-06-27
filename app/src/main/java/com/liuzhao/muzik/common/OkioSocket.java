@@ -5,6 +5,9 @@ import android.os.Looper;
 import android.os.Message;
 import android.util.Log;
 
+import com.liuzhao.muzik.app.Constants;
+
+import java.io.File;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.Socket;
@@ -28,7 +31,7 @@ public class OkioSocket {
     private String host;
     private int port;
     private int connectTimeOut = 3000;
-    private int readTimeOut = 5000;
+    private int readTimeOut = 10000;
     private volatile BufferedSink mSink;
     private volatile BufferedSource mSource;
     private volatile BlockingQueue<Request> requestDeque = new LinkedBlockingDeque<>(5);
@@ -100,6 +103,7 @@ public class OkioSocket {
         Request request;
         Socket socket = null;
         Callback callback = null;
+
         while (isReading) {
             try {
                 request = requestDeque.take();
@@ -107,13 +111,29 @@ public class OkioSocket {
                 callback = request.getCallback();
                 socket.setSoTimeout(readTimeOut);
                 mSource = Okio.buffer(Okio.source(socket));
-                String response = mSource.readUtf8();
-                if (!response.isEmpty()) {
-                    Log.e("Socket", "接收数据 " + response);
+                if (request.request.contains("download")) {
+                    BufferedSink sink = Okio.buffer(Okio.sink(new File(Constants.DATA_PATH)));
+                    byte[] bytes = new byte[1024];
+                    int len = -1;
+                    while ((len = mSource.read(bytes)) != -1) {
+                        String result = new String(bytes, 0, len);
+                        sink.writeUtf8(result).flush();
+                    }
+                    String response = "success";
                     Call call = new Call(response, callback);
                     Message message = Message.obtain(handler, 0x1e, call);
                     message.sendToTarget();
+
+                } else {
+                    String response = mSource.readUtf8();
+                    if (!response.isEmpty()) {
+                        Log.e("Socket", "接收数据 " + response);
+                        Call call = new Call(response, callback);
+                        Message message = Message.obtain(handler, 0x1e, call);
+                        message.sendToTarget();
+                    }
                 }
+
 
             } catch (IOException | InterruptedException e) {
                 if (e instanceof IOException) {
@@ -174,10 +194,12 @@ public class OkioSocket {
     class Request{
         Socket socket;
         Callback callback;
+        String request;
 
-        public Request(Socket socket, Callback callback) {
+        public Request(Socket socket, Callback callback, String request) {
             this.socket = socket;
             this.callback = callback;
+            this.request = request;
         }
 
         public Socket getSocket() {
@@ -212,7 +234,7 @@ public class OkioSocket {
                     socket.connect(address, connectTimeOut);
                     mSink = Okio.buffer(Okio.sink(socket));
                     if (callback != null) {
-                        Request request = new Request(socket, callback);
+                        Request request = new Request(socket, callback, msg);
                         requestDeque.offer(request);
                     }
                     if (mSink != null) {

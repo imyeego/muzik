@@ -4,10 +4,13 @@ import android.content.Context;
 import android.content.Intent;
 import android.graphics.Canvas;
 import android.graphics.Color;
+import android.graphics.Matrix;
 import android.graphics.Paint;
 import android.graphics.Point;
 import android.graphics.Rect;
+import android.graphics.RectF;
 import android.net.wifi.WifiManager;
+import android.text.TextUtils;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
@@ -57,11 +60,19 @@ import org.xutils.ex.DbException;
 import org.xutils.x;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import okio.Buffer;
+import okio.BufferedSink;
+import okio.BufferedSource;
+import okio.Okio;
+import okio.Source;
 
 public class MainActivity extends BaseActivity<NewsPresenter> implements NewsContract.View, DownloadManager.ObserverProgress {
 
@@ -112,14 +123,8 @@ public class MainActivity extends BaseActivity<NewsPresenter> implements NewsCon
         manager = DownloadManager.getInstance();
         manager.setObserverProgress(this);
         openWifi(context);
-//        socket = new OkioSocket("172.16.41.84", 12789);
-        socket = new OkioSocket("222.91.163.154", 12789);
-//        socket.setCallback(new OkioSocket.Callback() {
-//            @Override
-//            public void onSuccess(String response) {
-//                Toast.makeText(context, "" + response.length(), Toast.LENGTH_SHORT).show();
-//            }
-//        });
+        socket = new OkioSocket("172.16.41.42", 8889);
+
         loadData();
         table.getConfig().setShowXSequence(false);
         table.getConfig().setShowTableTitle(false);
@@ -170,6 +175,25 @@ public class MainActivity extends BaseActivity<NewsPresenter> implements NewsCon
 
             }
         });
+//        byte[] bytes = new byte[102];
+//        int len;
+//        String filePath = Constants.PATH + File.separator + "sock.py";
+//        String writePath = Constants.PATH + File.separator + "test.py";
+//        try (BufferedSource source = Okio.buffer(Okio.source(new File(filePath)));
+//             BufferedSink sink = Okio.buffer(Okio.sink(new File(writePath)))){
+//            while ((len = source.read(bytes)) != -1) {
+//                String result = new String(bytes, 0, len);
+//                Log.e("Okio", result);
+//                sink.writeUtf8(result).flush();
+//            }
+//
+//
+//        } catch (FileNotFoundException e) {
+//            e.printStackTrace();
+//        } catch (IOException e) {
+//            e.printStackTrace();
+//        }
+
     }
 
     @OnClick(R.id.bn_stop)
@@ -196,6 +220,7 @@ public class MainActivity extends BaseActivity<NewsPresenter> implements NewsCon
 
             }
         });
+
 
     }
 
@@ -326,5 +351,13 @@ public class MainActivity extends BaseActivity<NewsPresenter> implements NewsCon
             wifiManager.setWifiEnabled(true);
         }
         Log.e("Wi-Fi 状态", "打开...");
+    }
+
+    public static boolean isFileExist(String filePath) {
+        if (TextUtils.isEmpty(filePath)) {
+            return false;
+        }
+        File file = new File(filePath);
+        return (file.exists() && file.isFile());
     }
 }
