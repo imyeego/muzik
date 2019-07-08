@@ -10,6 +10,7 @@ import android.graphics.Point;
 import android.graphics.Rect;
 import android.graphics.RectF;
 import android.net.wifi.WifiManager;
+import android.os.Environment;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.View;
@@ -53,6 +54,8 @@ import com.liuzhao.muzik.utils.Counter;
 import com.liuzhao.okevent.OkEvent;
 import com.liuzhao.okevent.Subscribe;
 import com.liuzhao.okevent.ThreadMode;
+import com.tencent.tinker.lib.tinker.Tinker;
+import com.tencent.tinker.lib.tinker.TinkerInstaller;
 
 
 import org.xutils.DbManager;
@@ -124,7 +127,7 @@ public class MainActivity extends BaseActivity<NewsPresenter> implements NewsCon
         manager.setObserverProgress(this);
         openWifi(context);
         socket = new OkioSocket("172.16.41.42", 8889);
-
+        btnHello.setText("START");
         loadData();
         table.getConfig().setShowXSequence(false);
         table.getConfig().setShowTableTitle(false);
@@ -163,36 +166,20 @@ public class MainActivity extends BaseActivity<NewsPresenter> implements NewsCon
 //        map.put("username", "liuzhao");
 //        presenter.onLogin(map);
 
-        socket.send(str, new OkioSocket.Callback() {
-            @Override
-            public void onSuccess(String response) {
-                Toast.makeText(context, "" + response.length(), Toast.LENGTH_SHORT).show();
-            }
-
-            @Override
-            public void onFailure(String msg) {
-                Toast.makeText(context, msg, Toast.LENGTH_SHORT).show();
-
-            }
-        });
-//        byte[] bytes = new byte[102];
-//        int len;
-//        String filePath = Constants.PATH + File.separator + "sock.py";
-//        String writePath = Constants.PATH + File.separator + "test.py";
-//        try (BufferedSource source = Okio.buffer(Okio.source(new File(filePath)));
-//             BufferedSink sink = Okio.buffer(Okio.sink(new File(writePath)))){
-//            while ((len = source.read(bytes)) != -1) {
-//                String result = new String(bytes, 0, len);
-//                Log.e("Okio", result);
-//                sink.writeUtf8(result).flush();
+//        socket.send(str, new OkioSocket.Callback() {
+//            @Override
+//            public void onSuccess(String response) {
+//                Toast.makeText(context, "" + response.length(), Toast.LENGTH_SHORT).show();
 //            }
 //
+//            @Override
+//            public void onFailure(String msg) {
+//                Toast.makeText(context, msg, Toast.LENGTH_SHORT).show();
 //
-//        } catch (FileNotFoundException e) {
-//            e.printStackTrace();
-//        } catch (IOException e) {
-//            e.printStackTrace();
-//        }
+//            }
+//        });
+        Toast.makeText(context, "Tinker修复成功...", Toast.LENGTH_SHORT).show();
+
 
     }
 
