@@ -2,7 +2,7 @@ apply plugin: 'com.android.application'
 apply plugin: 'com.hujiang.android-aspectjx'
 apply plugin: 'kotlin-android'
 apply plugin: 'kotlin-android-extensions'
-apply from: 'tinkerpatch.gradle'
+//apply from: 'tinkerpatch.gradle'
 
 android {
     compileSdkVersion 28
@@ -12,9 +12,9 @@ android {
         targetSdkVersion 28
         versionCode 1
         versionName "1.0"
-        multiDexEnabled true
-        multiDexKeepProguard file("tinkerMultidexKeep.pro") //keep specific classes using proguard syntax
-        testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
+//        multiDexEnabled true
+//        multiDexKeepProguard file("tinkerMultidexKeep.pro") //keep specific classes using proguard syntax
+//        testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
 
     }
 
@@ -90,9 +90,9 @@ dependencies {
     implementation 'org.aspectj:aspectjrt:1.8.13'
     implementation 'com.github.huangyanbin:SmartTable:2.2.0'
 
-    annotationProcessor("com.tinkerpatch.tinker:tinker-android-anno:${TINKER_VERSION}") { changing = true }
-    compileOnly("com.tinkerpatch.tinker:tinker-android-anno:${TINKER_VERSION}") { changing = true }
-    implementation("com.tinkerpatch.sdk:tinkerpatch-android-sdk:${TINKERPATCH_VERSION}") { changing = true }
+//    annotationProcessor("com.tinkerpatch.tinker:tinker-android-anno:${TINKER_VERSION}") { changing = true }
+//    compileOnly("com.tinkerpatch.tinker:tinker-android-anno:${TINKER_VERSION}") { changing = true }
+//    implementation("com.tinkerpatch.sdk:tinkerpatch-android-sdk:${TINKERPATCH_VERSION}") { changing = true }
 
     implementation "com.android.support:multidex:1.0.2"
 }
