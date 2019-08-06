@@ -39,6 +39,7 @@ import com.liuzhao.muzik.annotation.SingleClick;
 import com.liuzhao.muzik.app.Constants;
 import com.liuzhao.muzik.common.OkioSocket;
 import com.liuzhao.muzik.common.download.DownloadManager;
+import com.liuzhao.muzik.common.nio.NioSocket;
 import com.liuzhao.muzik.model.bean.Exam;
 import com.liuzhao.muzik.model.bean.MovieEntity;
 import com.liuzhao.muzik.model.bean.NewsEntity;
@@ -54,8 +55,6 @@ import com.liuzhao.muzik.utils.Counter;
 import com.liuzhao.okevent.OkEvent;
 import com.liuzhao.okevent.Subscribe;
 import com.liuzhao.okevent.ThreadMode;
-import com.tencent.tinker.lib.tinker.Tinker;
-import com.tencent.tinker.lib.tinker.TinkerInstaller;
 
 
 import org.xutils.DbManager;
@@ -178,7 +177,10 @@ public class MainActivity extends BaseActivity<NewsPresenter> implements NewsCon
 //
 //            }
 //        });
-        Toast.makeText(context, "Tinker修复成功...", Toast.LENGTH_SHORT).show();
+        NioSocket nioSocket = NioSocket.instance()
+                .setHostAndPort("192.168.137.1", 8889)
+                .build();
+//        Toast.makeText(context, "Tinker修复成功...", Toast.LENGTH_SHORT).show();
 
 
     }
