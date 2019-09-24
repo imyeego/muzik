@@ -29,7 +29,7 @@ import rx.schedulers.Schedulers;
 public class DownloadManager implements DownloadListener {
     private static String TAG = "Download Manager";
 //    public static final String DOWNLOAD_URL = "http://imtt.dd.qq.com/16891/89E1C87A75EB3E1221F2CDE47A60824A.apk?fsname=com.snda.wifilocating_4.2.62_3192.apk&csr=1bbd";
-    public static final String DOWNLOAD_URL = "http://192.168.1.227:8080/download";
+    public static final String DOWNLOAD_URL = "http://172.16.41.186:8080/newsfyz/dataApi/androidDB?schoolcode=86.63.27.003&taskcode=1";
     public static final File DOWNLOAD_PATH = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS);
     private Subscription subscription;
     private ObserverProgress observerProgress;

@@ -1,19 +1,37 @@
 package com.liuzhao.muzik.ui.activity;
 
+import android.Manifest;
+import android.animation.Animator;
+import android.animation.AnimatorSet;
+import android.animation.FloatEvaluator;
+import android.animation.IntEvaluator;
+import android.animation.ObjectAnimator;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Canvas;
 import android.graphics.Color;
+import android.graphics.ColorFilter;
 import android.graphics.Matrix;
 import android.graphics.Paint;
 import android.graphics.Point;
+import android.graphics.PorterDuffColorFilter;
 import android.graphics.Rect;
 import android.graphics.RectF;
+import android.net.Uri;
 import android.net.wifi.WifiManager;
 import android.os.Environment;
+import android.os.Looper;
+import android.os.MessageQueue;
+import android.support.annotation.NonNull;
+import android.support.constraint.ConstraintLayout;
+import android.support.v4.view.ViewCompat;
+import android.support.v4.view.ViewGroupCompat;
+import android.support.v7.app.AlertDialog;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.View;
+import android.view.ViewAnimationUtils;
 import android.widget.Button;
 import android.widget.ProgressBar;
 import android.widget.TextView;
@@ -75,10 +93,13 @@ import okio.BufferedSink;
 import okio.BufferedSource;
 import okio.Okio;
 import okio.Source;
+import pub.devrel.easypermissions.EasyPermissions;
 
-public class MainActivity extends BaseActivity<NewsPresenter> implements NewsContract.View, DownloadManager.ObserverProgress {
+public class MainActivity extends BaseActivity<NewsPresenter> implements NewsContract.View
+        , DownloadManager.ObserverProgress, EasyPermissions.PermissionCallbacks {
 
     private static String TAG = "MainActivity";
+    private static final int WRITE_STORAGE_CODE = 455;
     @BindView(R.id.bn_hello)
     Button btnHello;
     @BindView(R.id.bn_stop)
@@ -93,8 +114,13 @@ public class MainActivity extends BaseActivity<NewsPresenter> implements NewsCon
     Button bnPlaylist;
     @BindView(R.id.st_data)
     SmartTable<Exam> table;
+    @BindView(R.id.cl_hello)
+    ConstraintLayout clHello;
+    @BindView(R.id.cl_stop)
+    ConstraintLayout clStop;
     private DownloadManager manager;
     private Counter counter;
+    private int width;
     private int i = 0;
     private String[] kms = new String[]{"文科综合", "理科综合", "英语"};
     private int[] kcCount = new int[]{4, 18, 32};
@@ -124,10 +150,10 @@ public class MainActivity extends BaseActivity<NewsPresenter> implements NewsCon
         ViewFinder.inject(this);
         manager = DownloadManager.getInstance();
         manager.setObserverProgress(this);
-        openWifi(context);
+//        openWifi(context);
         socket = new OkioSocket("172.16.41.42", 8889);
         btnHello.setText("START");
-        loadData();
+//        loadData();
         table.getConfig().setShowXSequence(false);
         table.getConfig().setShowTableTitle(false);
         table.getConfig().setColumnTitleHorizontalPadding(0);
@@ -153,6 +179,10 @@ public class MainActivity extends BaseActivity<NewsPresenter> implements NewsCon
         table.getConfig().setColumnTitleGridStyle(lineStyle);
 
         table.setData(list);
+        clHello.post(() -> {
+            width = clHello.getMeasuredWidth();
+        });
+
 //        saveFirstData();
 //        Intent intent = new Intent(this, NetworkService.class);
 //        startService(intent);
@@ -164,7 +194,7 @@ public class MainActivity extends BaseActivity<NewsPresenter> implements NewsCon
 //        Map<String, Object> map = new HashMap<>();
 //        map.put("username", "liuzhao");
 //        presenter.onLogin(map);
-
+        manager.start();
 //        socket.send(str, new OkioSocket.Callback() {
 //            @Override
 //            public void onSuccess(String response) {
@@ -177,47 +207,88 @@ public class MainActivity extends BaseActivity<NewsPresenter> implements NewsCon
 //
 //            }
 //        });
-        NioSocket nioSocket = NioSocket.instance()
-                .setHostAndPort("192.168.137.1", 8889)
-                .build();
+//        NioSocket nioSocket = NioSocket.instance()
+//                .setHostAndPort("192.168.137.1", 8889)
+//                .build();
+
+
+
 //        Toast.makeText(context, "Tinker修复成功...", Toast.LENGTH_SHORT).show();
+
+//        ObjectAnimator animator = ObjectAnimator.ofObject(clStop, "translationX", new FloatEvaluator(), width, 0);
+//        ObjectAnimator animator1 = ObjectAnimator.ofObject(clHello, "translationX", new FloatEvaluator(), 0, -width);
+//        AnimatorSet animatorSet = new AnimatorSet();
+//        animatorSet.play(animator).with(animator1);
+//        animatorSet.setDuration(1000);
+//        animatorSet.addListener(new Animator.AnimatorListener() {
+//            @Override
+//            public void onAnimationStart(Animator animation) {
+//                clStop.setVisibility(View.VISIBLE);
+//
+//            }
+//
+//            @Override
+//            public void onAnimationEnd(Animator animation) {
+//                clStop.setVisibility(View.GONE);
+//
+//            }
+//
+//            @Override
+//            public void onAnimationCancel(Animator animation) {
+//
+//            }
+//
+//            @Override
+//            public void onAnimationRepeat(Animator animation) {
+//
+//            }
+//        });
+//        animatorSet.start();
 
 
     }
 
     @OnClick(R.id.bn_stop)
     void onStop(View view){
-//        if ((counter.getCount() & 1) == 0){
-//            manager.pause();
-//            btnStop.setText("restart");
-//        }
-//        else{
-//            manager.reStart();
-//            btnStop.setText("stop");
-//        }
-//        counter.count();
+        if ((counter.getCount() & 1) == 0){
+            manager.pause();
+            btnStop.setText("restart");
+        }
+        else{
+            manager.reStart();
+            btnStop.setText("stop");
+        }
+        counter.count();
 
-        socket.send(str1, new OkioSocket.Callback() {
-            @Override
-            public void onSuccess(String response) {
-                Toast.makeText(context, "" + response.length(), Toast.LENGTH_SHORT).show();
-            }
+//        socket.send(str1, new OkioSocket.Callback() {
+//            @Override
+//            public void onSuccess(String response) {
+//                Toast.makeText(context, "" + response.length(), Toast.LENGTH_SHORT).show();
+//            }
+//
+//            @Override
+//            public void onFailure(String msg) {
+//                Toast.makeText(context, msg, Toast.LENGTH_SHORT).show();
+//
+//            }
+//        });
 
-            @Override
-            public void onFailure(String msg) {
-                Toast.makeText(context, msg, Toast.LENGTH_SHORT).show();
-
-            }
-        });
+//        Toast.makeText(context, "Tinker修复成功...", Toast.LENGTH_SHORT).show();
 
 
     }
 
     @OnClick(R.id.bn_playlist)
     void onToPlaylist(View view){
-        Intent intent = new Intent();
-        intent.setClass(this, PlaylistActivity.class);
-        startActivity(intent);
+//        Intent intent = new Intent();
+//        intent.setClass(this, PlaylistActivity.class);
+//        startActivity(intent);
+        if (!EasyPermissions.hasPermissions(this, Manifest.permission.WRITE_EXTERNAL_STORAGE)){
+            EasyPermissions.requestPermissions(this, "请求存储权限", WRITE_STORAGE_CODE
+                    , Manifest.permission.WRITE_EXTERNAL_STORAGE);
+            return;
+        }
+        saveFirstData();
     }
 
     private void saveFirstData() {
@@ -249,6 +320,48 @@ public class MainActivity extends BaseActivity<NewsPresenter> implements NewsCon
             e.printStackTrace();
         }
     }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        EasyPermissions.onRequestPermissionsResult(requestCode, permissions, grantResults, this);
+    }
+
+    @Override
+    public void onPermissionsGranted(int requestCode, @NonNull List<String> perms) {
+        switch (requestCode) {
+            case WRITE_STORAGE_CODE:
+                saveFirstData();
+                break;
+            default:
+                break;
+        }
+    }
+
+    @Override
+    public void onPermissionsDenied(int requestCode, @NonNull List<String> perms) {
+        switch (requestCode) {
+            case WRITE_STORAGE_CODE:
+                new AlertDialog.Builder(this)
+                        .setTitle("权限申请")
+                        .setMessage("当前App需要存储权限，请在应用的权限管理中授予。")
+                        .setPositiveButton("确定", (dialog, which) -> {
+                            Intent intent = new Intent();
+                            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                            intent.setAction("android.settings.APPLICATION_DETAILS_SETTINGS");
+                            intent.setData(Uri.fromParts("package", context.getPackageName(), null));
+                            startActivity(intent);
+                        })
+                        .setNegativeButton("取消", (dialog, which) -> {
+                            Toast.makeText(MainActivity.this, "您取消了权限授予", Toast.LENGTH_SHORT).show();
+                        }).create().show();
+                break;
+            default:
+                break;
+        }
+
+    }
+
 
     private void loadData() {
         list.clear();

@@ -4,25 +4,48 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".ui.activity.MainActivity">
-
-    <Button
-        android:id="@+id/bn_hello"
+    tools:context=".ui.activity.MainActivity"
+    >
+    <android.support.constraint.ConstraintLayout
+        android:id="@+id/cl_hello"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="start"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
-        app:layout_constraintHorizontal_bias="0.25"/>
+        app:layout_constraintHorizontal_bias="0.25"
+        >
+        <Button
+            android:id="@+id/bn_hello"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="start"
+            app:layout_constraintLeft_toLeftOf="parent"
+            app:layout_constraintRight_toRightOf="parent"
+            />
 
-    <Button
-        android:id="@+id/bn_stop"
+
+    </android.support.constraint.ConstraintLayout>
+
+
+    <android.support.constraint.ConstraintLayout
+        android:id="@+id/cl_stop"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="stop"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
-        app:layout_constraintHorizontal_bias="0.75"/>
+        app:layout_constraintHorizontal_bias="0.75">
+        <Button
+            android:id="@+id/bn_stop"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="stop"
+            app:layout_constraintLeft_toLeftOf="parent"
+            app:layout_constraintRight_toRightOf="parent"
+            />
+
+
+    </android.support.constraint.ConstraintLayout>
+
 
 
     <ProgressBar
@@ -33,7 +56,7 @@
         android:layout_marginTop="16dp"
         android:progress="0"
         style="@style/Base.Widget.AppCompat.ProgressBar.Horizontal"
-        app:layout_constraintTop_toBottomOf="@id/bn_hello"
+        app:layout_constraintTop_toBottomOf="@id/cl_hello"
         />
     <TextView
         android:id="@+id/tv_hello"
@@ -54,7 +77,6 @@
         android:paddingVertical="5dp"
         android:text="playlist"
         app:layout_constraintLeft_toLeftOf="parent"
-        app:layout_constraintRight_toRightOf="parent"
         app:layout_constraintTop_toBottomOf="@id/tv_hello"
         />
 
@@ -67,6 +89,7 @@
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
         android:layout_marginTop="20dp"
+        android:visibility="gone"
         />
 
 </android.support.constraint.ConstraintLayout>
