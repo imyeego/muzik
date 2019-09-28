@@ -280,15 +280,15 @@ public class MainActivity extends BaseActivity<NewsPresenter> implements NewsCon
 
     @OnClick(R.id.bn_playlist)
     void onToPlaylist(View view){
-//        Intent intent = new Intent();
-//        intent.setClass(this, PlaylistActivity.class);
-//        startActivity(intent);
-        if (!EasyPermissions.hasPermissions(this, Manifest.permission.WRITE_EXTERNAL_STORAGE)){
-            EasyPermissions.requestPermissions(this, "请求存储权限", WRITE_STORAGE_CODE
-                    , Manifest.permission.WRITE_EXTERNAL_STORAGE);
-            return;
-        }
-        saveFirstData();
+        Intent intent = new Intent();
+        intent.setClass(this, PlaylistActivity.class);
+        startActivity(intent);
+//        if (!EasyPermissions.hasPermissions(this, Manifest.permission.WRITE_EXTERNAL_STORAGE)){
+//            EasyPermissions.requestPermissions(this, "请求存储权限", WRITE_STORAGE_CODE
+//                    , Manifest.permission.WRITE_EXTERNAL_STORAGE);
+//            return;
+//        }
+//        saveFirstData();
     }
 
     private void saveFirstData() {
