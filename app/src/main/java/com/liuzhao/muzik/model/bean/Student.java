@@ -32,6 +32,8 @@ public class Student implements Serializable{
     private String school;
     @Column(name = "upload")
     private  String uploaded;
+    @Column(name = "time")
+    private String time;
 
     public long getId() {
         return id;
@@ -97,6 +99,14 @@ public class Student implements Serializable{
         this.uploaded = uploaded;
     }
 
+    public String getTime() {
+        return time;
+    }
+
+    public void setTime(String time) {
+        this.time = time;
+    }
+
     @Override
     public String toString() {
         return "Student{" +
@@ -107,6 +117,7 @@ public class Student implements Serializable{
                 ", classes=" + classes +
                 ", grade=" + grade +
                 ", school='" + school + '\'' +
+                ", time='" + time + '\'' +
                 '}';
     }
 }

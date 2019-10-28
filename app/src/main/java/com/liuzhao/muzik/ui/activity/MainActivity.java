@@ -83,10 +83,18 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.nio.charset.Charset;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.TimeUnit;
 
 import okio.Buffer;
 import okio.BufferedSink;
@@ -133,6 +141,9 @@ public class MainActivity extends BaseActivity<NewsPresenter> implements NewsCon
 
     private List<Exam> list = new ArrayList<>();
     private OkioSocket socket;
+    private DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss");
+    private ScheduledExecutorService scheduledService = Executors.newScheduledThreadPool(5);
+    private ScheduledFuture future;
     private DbManager dbManager;
     private DbManager.DaoConfig config = new DbManager.DaoConfig()
             .setDbName("student.db")
@@ -250,15 +261,18 @@ public class MainActivity extends BaseActivity<NewsPresenter> implements NewsCon
 
     @OnClick(R.id.bn_stop)
     void onStop(View view){
-        if ((counter.getCount() & 1) == 0){
-            manager.pause();
-            btnStop.setText("restart");
+//        if ((counter.getCount() & 1) == 0){
+//            manager.pause();
+//            btnStop.setText("restart");
+//        }
+//        else{
+//            manager.reStart();
+//            btnStop.setText("stop");
+//        }
+//        counter.count();
+        if (future != null) {
+            future.cancel(false);
         }
-        else{
-            manager.reStart();
-            btnStop.setText("stop");
-        }
-        counter.count();
 
 //        socket.send(str1, new OkioSocket.Callback() {
 //            @Override
@@ -280,15 +294,15 @@ public class MainActivity extends BaseActivity<NewsPresenter> implements NewsCon
 
     @OnClick(R.id.bn_playlist)
     void onToPlaylist(View view){
-        Intent intent = new Intent();
-        intent.setClass(this, PlaylistActivity.class);
-        startActivity(intent);
-//        if (!EasyPermissions.hasPermissions(this, Manifest.permission.WRITE_EXTERNAL_STORAGE)){
-//            EasyPermissions.requestPermissions(this, "请求存储权限", WRITE_STORAGE_CODE
-//                    , Manifest.permission.WRITE_EXTERNAL_STORAGE);
-//            return;
-//        }
-//        saveFirstData();
+//        Intent intent = new Intent();
+//        intent.setClass(this, PlaylistActivity.class);
+//        startActivity(intent);
+        if (!EasyPermissions.hasPermissions(this, Manifest.permission.WRITE_EXTERNAL_STORAGE)){
+            EasyPermissions.requestPermissions(this, "请求存储权限", WRITE_STORAGE_CODE
+                    , Manifest.permission.WRITE_EXTERNAL_STORAGE);
+            return;
+        }
+        future = scheduledService.scheduleWithFixedDelay(load, 1, 1, TimeUnit.SECONDS);
     }
 
     private void saveFirstData() {
@@ -301,20 +315,28 @@ public class MainActivity extends BaseActivity<NewsPresenter> implements NewsCon
         student.setClasses((byte) 8);
         student.setGrade((byte) 2);
         student.setSchool("北京101中学");
-//        student.setUploaded("");
+        student.setUploaded("");
+        student.setTime(dateFormat.format(new Date()));
         try {
             dbManager.save(student);
+            long count = dbManager.selector(Student.class).where("upload", "=", "").count();
+            Log.e(TAG, "before:" + count);
         } catch (DbException e) {
             e.printStackTrace();
         }
 
         try {
-            Student s = dbManager.selector(Student.class).where("name", "=", "刘钊").findFirst();
-            GsonBuilder builder = new GsonBuilder();
-            builder.excludeFieldsWithoutExposeAnnotation();
-            builder.serializeNulls();
-            String json = builder.create().toJson(s);
-            Toast.makeText(context, json, Toast.LENGTH_SHORT).show();
+            Student s = dbManager.selector(Student.class).where("upload", "=", "").findFirst();
+            s.setUploaded("1");
+            s.setTime(dateFormat.format(new Date()));
+            dbManager.saveOrUpdate(s);
+//            GsonBuilder builder = new GsonBuilder();
+//            builder.excludeFieldsWithoutExposeAnnotation();
+//            builder.serializeNulls();
+//            String json = builder.create().toJson(s);
+            long count = dbManager.selector(Student.class).where("upload", "=", "").count();
+            Log.e(TAG, "after:" + count);
+//            Toast.makeText(context, "" + count, Toast.LENGTH_SHORT).show();
 
         } catch (DbException e) {
             e.printStackTrace();
@@ -331,7 +353,7 @@ public class MainActivity extends BaseActivity<NewsPresenter> implements NewsCon
     public void onPermissionsGranted(int requestCode, @NonNull List<String> perms) {
         switch (requestCode) {
             case WRITE_STORAGE_CODE:
-                saveFirstData();
+                future = scheduledService.scheduleWithFixedDelay(load, 1, 1, TimeUnit.SECONDS);
                 break;
             default:
                 break;
@@ -462,4 +484,8 @@ public class MainActivity extends BaseActivity<NewsPresenter> implements NewsCon
         File file = new File(filePath);
         return (file.exists() && file.isFile());
     }
+
+    private Runnable load = () -> {
+        saveFirstData();
+    };
 }
