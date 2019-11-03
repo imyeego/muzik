@@ -15,7 +15,7 @@ import java.util.concurrent.LinkedBlockingQueue;
 
 import static com.liuzhao.muzik.common.promise.Signal.THEN;
 
-public class Promise {
+public class Promise<T> {
     private static final int QUEUE_SIZE = 5;
     private static Promise promise;
     private static Handler mainHandler;
@@ -23,7 +23,7 @@ public class Promise {
     private static BlockingQueue<Future<?>> handleQueue;
     private static Queue<Action<?>> thenQueue;
 
-    public static <T> Promise of(Callable<T> t) {
+    public static <T> Promise<T> of(Callable<T> t) {
         if (mainHandler == null) {
             mainHandler = new Handler(Looper.getMainLooper()) {
                 @Override
@@ -53,7 +53,7 @@ public class Promise {
         handleQueue.offer(future);
     }
 
-    public <T> Promise then(Action<T> action) {
+    public Promise<T> then(Action<? extends T> action) {
         thenQueue.offer(action);
         return promise;
     }
