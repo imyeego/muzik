@@ -1,15 +1,7 @@
 package com.liuzhao.muzik.common.promise;
 
-public enum Signal {
-    THEN(1),
-    NEXT(2),
-    CATCH(3);
+public class Signal {
 
-    private final int value;
-
-    Signal(int value) {
-        this.value = value;
-    }
-
+    public static final int THEN = 0xa001;
 
 }
