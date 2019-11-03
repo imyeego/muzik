@@ -43,9 +43,8 @@ public class Promise<T> {
         }
         handleQueue = new LinkedBlockingQueue<>(QUEUE_SIZE);
         thenQueue = new LinkedList<>();
-        promise = new Promise(t);
 
-        return promise;
+        return new Promise<>(t);
     }
 
     private <T> Promise(Callable<T> t){
@@ -55,7 +54,7 @@ public class Promise<T> {
 
     public Promise<T> then(Action<? extends T> action) {
         thenQueue.offer(action);
-        return promise;
+        return this;
     }
 
 
