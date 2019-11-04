@@ -20,9 +20,9 @@ public class Promise<T> {
     private static final int QUEUE_SIZE = 5;
     private static Handler mainHandler;
     private static ExecutorService service;
-    private BlockingQueue<Future<?>> handleQueue;
-    private Queue<Action<?>> thenQueue;
-    private Queue<Action<?>> mapQueue;
+    private static BlockingQueue<Future<?>> handleQueue;
+    private static Queue<Action<?>> thenQueue;
+    private static Queue<Object> mapQueue;
 
     public static <T> Promise<T> of(Callable<T> t) {
         if (mainHandler == null) {
@@ -39,10 +39,6 @@ public class Promise<T> {
             };
         }
 
-        return new Promise<>(t);
-    }
-
-    private <T> Promise(Callable<T> t){
         if (handleQueue == null) {
             handleQueue = new LinkedBlockingQueue<>(QUEUE_SIZE);
         }
@@ -51,44 +47,79 @@ public class Promise<T> {
             service = Executors.newCachedThreadPool();
 
         }
+
+        if (thenQueue == null) {
+            thenQueue = new LinkedList<>();
+        }
+
+        return new Promise<>(t);
+    }
+
+    private <T> Promise(Callable<T> t){
         Future<T> future = service.submit(t);
         handleQueue.offer(future);
     }
 
     public Promise<T> then(Action<? extends T> action) {
-        if (thenQueue == null) {
-            thenQueue = new LinkedList<>();
-            service.execute(loop);
-        }
         thenQueue.offer(action);
         return this;
     }
+
+    public Promise<T> ui(Action<? extends T> action) {
+        thenQueue.offer(action);
+        return this;
+    }
+
+    public Promise<T> io(Action<? extends T> action) {
+        thenQueue.offer(action);
+        return this;
+    }
+
 
     public <R> Promise<R> map(Func<? extends T, R> func) {
         if (mapQueue == null) {
             mapQueue = new LinkedList<>();
         }
         T t = null;
-        return new Promise<>(new Call<T, R>(func, t));
+        try {
+            t = (T) mapQueue.poll();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return new Promise<>(new Call<>(func, t));
     }
 
-    private Runnable loop = () -> {
-        for (;;) {
-            try {
-                Future<T> future = (Future<T>) handleQueue.take();
-                T t1 = future.get();
-                Result<T> result = new Result<>();
-                result.t = t1;
-                while (!thenQueue.isEmpty()) {
-                    Action<T> action = (Action<T>) thenQueue.poll();
-                    result.action = action;
-                    Message.obtain(mainHandler, THEN, result);
+    public void make() {
+        service.execute(new Loop<>());
+
+    }
+
+
+    private static class Loop<T> implements Runnable {
+        @Override
+        public void run() {
+            for (;;) {
+                try {
+                    Future<T> future = (Future<T>) handleQueue.take();
+                    T t1 = future.get();
+                    if (mapQueue != null) {
+                        mapQueue.offer(t1);
+
+                    } else {
+                        Result<T> result = new Result<>();
+                        result.t = t1;
+                        while (!thenQueue.isEmpty()) {
+                            Action<T> action = (Action<T>) thenQueue.poll();
+                            result.action = action;
+                            Message.obtain(mainHandler, THEN, result).sendToTarget();
+                        }
+                    }
+
+                } catch (InterruptedException | ExecutionException e) {
+                    e.printStackTrace();
                 }
-            } catch (InterruptedException | ExecutionException e) {
-                e.printStackTrace();
             }
         }
-    };
-
+    }
 
 }
