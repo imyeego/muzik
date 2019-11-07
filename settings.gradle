@@ -1,1 +1,1 @@
-include ':app', ':ioc-annotations', ':ioc-complier', ':ioc-api', ':ioc-api', ':okevent', ':requests', ':ioc-annotations', ':promise'
+include ':app', ':ioc-annotations', ':ioc-complier', ':ioc-api', ':ioc-api', ':okevent', ':requests', ':ioc-annotations'
