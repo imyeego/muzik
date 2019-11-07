@@ -39,18 +39,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 
-import com.bin.david.form.core.SmartTable;
-import com.bin.david.form.core.TableConfig;
-import com.bin.david.form.data.CellInfo;
-import com.bin.david.form.data.column.Column;
-import com.bin.david.form.data.format.bg.BaseBackgroundFormat;
-import com.bin.david.form.data.format.bg.BaseCellBackgroundFormat;
-import com.bin.david.form.data.format.bg.IBackgroundFormat;
-import com.bin.david.form.data.format.bg.ICellBackgroundFormat;
-import com.bin.david.form.data.style.FontStyle;
-import com.bin.david.form.data.style.LineStyle;
 import com.google.gson.GsonBuilder;
-import com.imyeego.promise.Promise;
 import com.liuzhao.ioc_annotations.BindView;
 import com.liuzhao.ioc_annotations.OnClick;
 import com.liuzhao.ioc_api.ViewFinder;
@@ -60,7 +49,6 @@ import com.liuzhao.muzik.app.Constants;
 import com.liuzhao.muzik.common.OkioSocket;
 import com.liuzhao.muzik.common.download.DownloadManager;
 import com.liuzhao.muzik.common.nio.NioSocket;
-import com.liuzhao.muzik.model.bean.Exam;
 import com.liuzhao.muzik.model.bean.MovieEntity;
 import com.liuzhao.muzik.model.bean.NewsEntity;
 import com.liuzhao.muzik.model.bean.Student;
@@ -123,8 +111,6 @@ public class MainActivity extends BaseActivity<NewsPresenter> implements NewsCon
 
     @BindView(R.id.bn_playlist)
     Button bnPlaylist;
-    @BindView(R.id.st_data)
-    SmartTable<Exam> table;
     @BindView(R.id.cl_hello)
     ConstraintLayout clHello;
     @BindView(R.id.cl_stop)
@@ -133,16 +119,9 @@ public class MainActivity extends BaseActivity<NewsPresenter> implements NewsCon
     private Counter counter;
     private int width;
     private int i = 0;
-    private String[] kms = new String[]{"文科综合", "理科综合", "英语"};
-    private int[] kcCount = new int[]{4, 18, 32};
-    private int[] bagCount = new int[]{4, 18, 32};
-    private int[] sparedPaperCount = new int[]{1, 1, 1};
-    private int[] sparedCardCount = new int[]{1, 1, 1};
-    private int[] total = new int[]{6, 20, 24};
     String str = "[{\"SN\":\"54:E1:AD:F1:8E:D5\",\"aim\":\"download_sfrz\",\"version\":\"0.1\"}]";
     String str1 = "[{\"SN\":\"54:E1:AD:F1:8E:D5\",\"aim\":\"upload_sfrz_result\",\"version\":\"0.1\"},{\"zjhm\":\"610124198810271029\",\"rzsj\":\"2019-07-08 08:25:25\",\"rzfs\":\"12\",\"rzjg\":\"1\",\"devSN\":\"\",\"zwppl\":\"\", \"rlppl\":\"0.36\",\"rlzp\":\"\",\"zwtp\":\"\",\"sfzzp\":\"\"}]";
 
-    private List<Exam> list = new ArrayList<>();
     private OkioSocket socket;
     private DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss");
     private ScheduledExecutorService scheduledService = Executors.newScheduledThreadPool(5);
@@ -167,37 +146,12 @@ public class MainActivity extends BaseActivity<NewsPresenter> implements NewsCon
 //        openWifi(context);
         socket = new OkioSocket("172.16.41.42", 8889);
         btnHello.setText("START");
-//        loadData();
-        table.getConfig().setShowXSequence(false);
-        table.getConfig().setShowTableTitle(false);
-        table.getConfig().setColumnTitleHorizontalPadding(0);
-        table.getConfig().setShowYSequence(false);
-        table.getConfig().setContentCellBackgroundFormat(new ICellBackgroundFormat<CellInfo>() {
-            @Override
-            public void drawBackground(Canvas canvas, Rect rect, CellInfo column, Paint paint) {
-                paint.setColor(Color.parseColor("#ededed"));
-                canvas.drawRect(rect, paint);
-            }
 
-            @Override
-            public int getTextColor(CellInfo column) {
-                return Color.parseColor("#191970");
-            }
-        });
-
-        FontStyle fontStyle = new FontStyle(14, Color.parseColor("#000000"));
-        table.getConfig().setColumnTitleStyle(fontStyle);
-
-        LineStyle lineStyle = new LineStyle(2, Color.parseColor("#191970"));
-        table.getConfig().setContentGridStyle(lineStyle);
-        table.getConfig().setColumnTitleGridStyle(lineStyle);
-
-        table.setData(list);
         clHello.post(() -> {
             width = clHello.getMeasuredWidth();
         });
 
-        saveFirstData();
+//        saveFirstData();
 //        Intent intent = new Intent(this, NetworkService.class);
 //        startService(intent);
     }
@@ -386,20 +340,6 @@ public class MainActivity extends BaseActivity<NewsPresenter> implements NewsCon
 
     }
 
-
-    private void loadData() {
-        list.clear();
-        for (int j = 0; j < 3; j++) {
-            Exam exam = new Exam();
-            exam.setKm(kms[j]);
-            exam.setKcCount(kcCount[j]);
-            exam.setBagCount(bagCount[j]);
-            exam.setSparedPaperCount(sparedPaperCount[j]);
-            exam.setSparedCardCount(sparedCardCount[j]);
-            exam.setTotal(total[j]);
-            list.add(exam);
-        }
-    }
 
     @Subscribe(threadMode = ThreadMode.POSTING)
     public void onText(FirstEvent event){
