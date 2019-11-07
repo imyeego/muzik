@@ -21,6 +21,7 @@ import android.graphics.RectF;
 import android.net.Uri;
 import android.net.wifi.WifiManager;
 import android.os.Environment;
+import android.os.Handler;
 import android.os.Looper;
 import android.os.MessageQueue;
 import android.support.annotation.NonNull;
@@ -49,6 +50,7 @@ import com.bin.david.form.data.format.bg.ICellBackgroundFormat;
 import com.bin.david.form.data.style.FontStyle;
 import com.bin.david.form.data.style.LineStyle;
 import com.google.gson.GsonBuilder;
+import com.imyeego.promise.Promise;
 import com.liuzhao.ioc_annotations.BindView;
 import com.liuzhao.ioc_annotations.OnClick;
 import com.liuzhao.ioc_api.ViewFinder;
@@ -102,6 +104,7 @@ import okio.BufferedSource;
 import okio.Okio;
 import okio.Source;
 import pub.devrel.easypermissions.EasyPermissions;
+import rx.Observable;
 
 public class MainActivity extends BaseActivity<NewsPresenter> implements NewsContract.View
         , DownloadManager.ObserverProgress, EasyPermissions.PermissionCallbacks {
@@ -194,7 +197,7 @@ public class MainActivity extends BaseActivity<NewsPresenter> implements NewsCon
             width = clHello.getMeasuredWidth();
         });
 
-//        saveFirstData();
+        saveFirstData();
 //        Intent intent = new Intent(this, NetworkService.class);
 //        startService(intent);
     }
@@ -288,7 +291,6 @@ public class MainActivity extends BaseActivity<NewsPresenter> implements NewsCon
 //        });
 
 //        Toast.makeText(context, "Tinker修复成功...", Toast.LENGTH_SHORT).show();
-
 
     }
 
