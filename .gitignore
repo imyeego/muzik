@@ -16,7 +16,7 @@
 /ioc-api/*.iml
 
 /ioc-complier/build
-/ioc-coomplier/*.iml
+/ioc-complier/*.iml
 
 /okevent/build
 /okevent/*.iml
