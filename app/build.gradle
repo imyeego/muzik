@@ -102,4 +102,5 @@ dependencies {
     //    compileOnly("com.tinkerpatch.tinker:tinker-android-anno:${TINKER_VERSION}") { changing = true }
     //    implementation("com.tinkerpatch.sdk:tinkerpatch-android-sdk:${TINKERPATCH_VERSION}") { changing = true }
     implementation 'com.android.support:multidex:1.0.2'
+    implementation 'com.imyeego.promise:promise-all:1.0.0'
 }
