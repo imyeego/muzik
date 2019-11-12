@@ -88,7 +88,7 @@ public class Http {
         call.enqueue(new Callback<ResponseBody>() {
             @Override
             public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
-                if (response.isSuccess()) {
+                if (response.isSuccessful()) {
                     try {
                         T t = fromJson(response.body().string(), callback);
                         if (t != null) {
@@ -125,7 +125,7 @@ public class Http {
             @Override
             public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
                 if (response != null) {
-                    if (response.isSuccess()) {
+                    if (response.isSuccessful()) {
                         executorService.execute(() -> {
                             writeResponseToDisk(Constants.DATA_PATH, response, listener);
                         });
@@ -153,13 +153,18 @@ public class Http {
         call.enqueue(new Callback<ResponseBody>() {
             @Override
             public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
-                if (response.isSuccess()) {
+                if (response.isSuccessful()) {
                     try {
-                        ResponseModel<T> responseModel = parseResponse(response.body().string(), listener);
-                        handler.post(() -> listener.onFinish(responseModel.getData()));
+//                        ResponseModel<T> responseModel = parseResponse(response.body().string(), listener);
+//                        handler.post(() -> listener.onFinish(responseModel.getData()));
+                        T t = fromJson(response.body().string(), listener);
+                        if (t != null) {
+                            listener.onFinish(t);
+                        }
+
                     } catch (IOException e) {
                         e.printStackTrace();
-                        handler.post(() -> listener.onFail(e));
+                        listener.onFail(e);
                     }
 
                 }
@@ -167,7 +172,7 @@ public class Http {
 
             @Override
             public void onFailure(Call<ResponseBody> call, Throwable t) {
-                handler.post(() -> listener.onFail(t));
+                listener.onFail(t);
             }
         });
     }

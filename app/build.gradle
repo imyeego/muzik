@@ -85,9 +85,9 @@ dependencies {
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
     implementation 'io.reactivex:rxjava:1.1.0'
     implementation 'io.reactivex:rxandroid:1.1.0'
-    implementation 'com.squareup.retrofit2:retrofit:2.0.0-beta4'
-    implementation 'com.squareup.retrofit2:converter-gson:2.0.0-beta4'
-    implementation 'com.squareup.retrofit2:adapter-rxjava:2.0.0-beta4'
+    implementation 'com.squareup.retrofit2:retrofit:2.4.0'
+    implementation 'com.squareup.retrofit2:converter-gson:2.4.0'
+    implementation 'com.squareup.retrofit2:adapter-rxjava:2.4.0'
     implementation 'com.google.code.gson:gson:2.6.2'
     implementation 'org.xutils:xutils:3.5.1'
     implementation 'com.orhanobut:logger:1.15'

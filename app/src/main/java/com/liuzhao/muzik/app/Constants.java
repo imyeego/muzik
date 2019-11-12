@@ -21,7 +21,7 @@ public class Constants {
     //豆瓣top250 api
     public static String DOUBAN_TOP250 = "https://api.douban.com/v2/movie/";
 
-    public static final String MY_URL = "http://172.16.41.186:8080/newsfyz/";
+    public static final String MY_URL = "http://192.168.43.114:8088/";
 
     public static final String PATH = Environment.getExternalStorageDirectory() + File.separator + APP_NAME;
 

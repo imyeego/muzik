@@ -32,5 +32,5 @@ public interface APIService {
 
     @Multipart
     @POST
-    Call<ResponseBody> upload(@Url String url, @Part("file") MultipartBody.Part part);
+    Call<ResponseBody> upload(@Url String url, @Part MultipartBody.Part part);
 }

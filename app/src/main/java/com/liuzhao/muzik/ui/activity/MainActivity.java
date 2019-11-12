@@ -48,9 +48,11 @@ import com.liuzhao.muzik.annotation.SingleClick;
 import com.liuzhao.muzik.app.Constants;
 import com.liuzhao.muzik.common.OkioSocket;
 import com.liuzhao.muzik.common.download.DownloadManager;
+import com.liuzhao.muzik.common.http.BaseResult;
 import com.liuzhao.muzik.common.http.DownloadListener;
 import com.liuzhao.muzik.common.http.Http;
 import com.liuzhao.muzik.common.http.PostCallback;
+import com.liuzhao.muzik.common.http.UploadListener;
 import com.liuzhao.muzik.common.nio.NioSocket;
 import com.liuzhao.muzik.model.UserBean;
 import com.liuzhao.muzik.model.bean.MovieEntity;
@@ -163,10 +165,10 @@ public class MainActivity extends BaseActivity<NewsPresenter> implements NewsCon
     @OnClick(R.id.bn_hello)
     @SingleClick
     void onStart(View view){
-//        Map<String, Object> map = new HashMap<>();
-//        map.put("username", "liuzhao");
-//        presenter.onLogin(map);
-        manager.start();
+        Map<String, Object> map = new HashMap<>();
+        map.put("username", "liuzhao");
+        presenter.onLogin(map);
+//        manager.start();
 //        socket.send(str, new OkioSocket.Callback() {
 //            @Override
 //            public void onSuccess(String response) {
@@ -277,6 +279,7 @@ public class MainActivity extends BaseActivity<NewsPresenter> implements NewsCon
 
             @Override
             public void onProgress(int progress) {
+                progressBar.setProgress(progress);
                 tvHello.setText("" + progress + "%");
             }
 
@@ -299,12 +302,37 @@ public class MainActivity extends BaseActivity<NewsPresenter> implements NewsCon
 //        Intent intent = new Intent();
 //        intent.setClass(this, PlaylistActivity.class);
 //        startActivity(intent);
-        if (!EasyPermissions.hasPermissions(this, Manifest.permission.WRITE_EXTERNAL_STORAGE)){
-            EasyPermissions.requestPermissions(this, "请求存储权限", WRITE_STORAGE_CODE
-                    , Manifest.permission.WRITE_EXTERNAL_STORAGE);
-            return;
-        }
-        future = scheduledService.scheduleWithFixedDelay(load, 1, 1, TimeUnit.SECONDS);
+//        if (!EasyPermissions.hasPermissions(this, Manifest.permission.WRITE_EXTERNAL_STORAGE)){
+//            EasyPermissions.requestPermissions(this, "请求存储权限", WRITE_STORAGE_CODE
+//                    , Manifest.permission.WRITE_EXTERNAL_STORAGE);
+//            return;
+//        }
+//        future = scheduledService.scheduleWithFixedDelay(load, 1, 1, TimeUnit.SECONDS);
+        File file = new File(Constants.DATA_PATH);
+        Http.instance().upload("upload", file, new UploadListener<BaseResult>() {
+            @Override
+            public void onStart() {
+                Toast.makeText(context, "开始上传", Toast.LENGTH_SHORT).show();
+            }
+
+            @Override
+            public void onProgress(int progress) {
+                progressBar.setProgress(progress);
+                tvHello.setText("" + progress + "%");
+            }
+
+            @Override
+            public void onFinish(BaseResult baseResult) {
+                Toast.makeText(context, "下载完成:" + baseResult.getCode(), Toast.LENGTH_SHORT).show();
+
+            }
+
+            @Override
+            public void onFail(Throwable t) {
+                Toast.makeText(context, t.getMessage(), Toast.LENGTH_SHORT).show();
+
+            }
+        });
     }
 
     private void saveFirstData() {
