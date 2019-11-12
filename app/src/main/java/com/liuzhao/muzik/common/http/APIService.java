@@ -25,7 +25,12 @@ public interface APIService {
     @GET
     Call<ResponseBody> download(@Header("RANGE") String start, @Url String url);
 
+    @Streaming
+    @POST
+    @FormUrlEncoded
+    Call<ResponseBody> download(@Header("RANGE") String start, @FieldMap Map<String, Object> map, @Url String url);
+
     @Multipart
     @POST
-    Call<ResponseBody> upload(@Url String path, @Part("file") MultipartBody.Part file);
+    Call<ResponseBody> upload(@Url String url, @Part("file") MultipartBody.Part part);
 }

@@ -7,8 +7,10 @@ import java.io.IOException;
 import java.net.URLDecoder;
 
 import okhttp3.Interceptor;
+import okhttp3.MediaType;
 import okhttp3.Request;
 import okhttp3.Response;
+import okhttp3.ResponseBody;
 
 /**
  * Created by zhongyu on 2018/11/8.
@@ -35,11 +37,13 @@ public class LoggingInterceptor implements Interceptor {
 
         //1.请求前--打印请求信息
         long t1 = System.nanoTime();
-        Logger.i(String.format("Sending request %s on %s%n%s",
-                request.url(), chain.connection(), request.headers()));
+        Logger.i(String.format("Sending request %s%n%s%n%s",
+                request.url(), request.headers(), request.body().toString()));
 
         //2.网络请求
         Response response = chain.proceed(request);
+        MediaType mediaType = response.body().contentType();
+//        String content= response.body().string();
 
         //3.网络响应后--打印响应信息
         long t2 = System.nanoTime();
@@ -47,11 +51,11 @@ public class LoggingInterceptor implements Interceptor {
         Logger.i(String.format("Received response for %s in %.1fms%n%s",
                 response.request().url(), (t2 - t1) / 1e6d, response.headers()));
 
-        String result = response.headers().get(CONTENT_DISPOSITION);
-        if (result != null && fileName == null) {
-            fileName = URLDecoder.decode(result.split(";")[1].trim().substring(9), "UTF-8");
-            listener.setFileName(fileName);
-        }
+//        String result = response.headers().get(CONTENT_DISPOSITION);
+//        if (result != null && fileName == null) {
+//            fileName = URLDecoder.decode(result.split(";")[1].trim().substring(9), "UTF-8");
+//            listener.setFileName(fileName);
+//        }
         return response;
 
     }

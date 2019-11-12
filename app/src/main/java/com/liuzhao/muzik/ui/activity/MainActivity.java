@@ -48,7 +48,11 @@ import com.liuzhao.muzik.annotation.SingleClick;
 import com.liuzhao.muzik.app.Constants;
 import com.liuzhao.muzik.common.OkioSocket;
 import com.liuzhao.muzik.common.download.DownloadManager;
+import com.liuzhao.muzik.common.http.DownloadListener;
+import com.liuzhao.muzik.common.http.Http;
+import com.liuzhao.muzik.common.http.PostCallback;
 import com.liuzhao.muzik.common.nio.NioSocket;
+import com.liuzhao.muzik.model.UserBean;
 import com.liuzhao.muzik.model.bean.MovieEntity;
 import com.liuzhao.muzik.model.bean.NewsEntity;
 import com.liuzhao.muzik.model.bean.Student;
@@ -245,6 +249,48 @@ public class MainActivity extends BaseActivity<NewsPresenter> implements NewsCon
 //        });
 
 //        Toast.makeText(context, "Tinker修复成功...", Toast.LENGTH_SHORT).show();
+        Map<String, Object> map = new HashMap<>();
+//        map.put("username", "jyd");
+//        map.put("password", "jyd");
+//        map.put("harddata", "BD8A11910051");
+//        map.put("taskcode", "jyd");
+
+        map.put("schoolcode", "86.63.27.003");
+        map.put("taskcode", "1");
+
+//        Http.instance().postMap("login/appDoLogin", map, new PostCallback<UserBean>() {
+//            @Override
+//            public void success(UserBean userBean) {
+//                Toast.makeText(context, userBean.getAccount(), Toast.LENGTH_SHORT).show();
+//            }
+//
+//            @Override
+//            public void fail(String err) {
+//                Toast.makeText(context, err, Toast.LENGTH_SHORT).show();
+//            }
+//        });
+        Http.instance().download("dataApi/androidDB", map, new DownloadListener() {
+            @Override
+            public void onStart() {
+                Toast.makeText(context, "开始下载", Toast.LENGTH_SHORT).show();
+            }
+
+            @Override
+            public void onProgress(int progress) {
+                tvHello.setText("" + progress + "%");
+            }
+
+            @Override
+            public void onFinish() {
+                Toast.makeText(context, "下载完成", Toast.LENGTH_SHORT).show();
+
+            }
+
+            @Override
+            public void onFail(Throwable t) {
+                Toast.makeText(context, t.getMessage(), Toast.LENGTH_SHORT).show();
+            }
+        });
 
     }
 
