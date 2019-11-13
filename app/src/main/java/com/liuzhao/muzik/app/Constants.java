@@ -25,7 +25,7 @@ public class Constants {
 
     public static final String PATH = Environment.getExternalStorageDirectory() + File.separator + APP_NAME;
 
-    public static final String DATA_PATH = Constants.PATH + File.separator + "school.db";
+    public static final String DATA_PATH = Constants.PATH + File.separator + "特征值.db";
 
 
 

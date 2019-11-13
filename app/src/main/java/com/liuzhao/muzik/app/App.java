@@ -1,14 +1,16 @@
 package com.liuzhao.muzik.app;
 
 import android.app.Application;
+import android.arch.persistence.room.Room;
 import android.content.Context;
 import android.support.multidex.MultiDexApplication;
+
+import com.liuzhao.muzik.database.AppDatabase;
 
 //import com.tencent.tinker.loader.app.ApplicationLike;
 //import com.tinkerpatch.sdk.TinkerPatch;
 //import com.tinkerpatch.sdk.loader.TinkerPatchApplicationLike;
 
-import org.xutils.x;
 
 /**
  * Created by zhongyu on 2018/10/22.
@@ -18,13 +20,16 @@ import org.xutils.x;
 public class App extends Application {
 
     private static App instance;
+    private AppDatabase appDatabase;
 //    private ApplicationLike mApplicationLike;
 
     @Override
     public void onCreate() {
         super.onCreate();
         instance = this;
-        x.Ext.init(this);
+        appDatabase = Room.databaseBuilder(getApplicationContext(), AppDatabase.class, Constants.DATA_PATH)
+                .allowMainThreadQueries()
+                .build();
 //        mApplicationLike = TinkerPatchApplicationLike.getTinkerPatchApplicationLike();
 //        // 初始化TinkerPatch SDK, 更多配置可参照API章节中的,初始化SDK
 //        TinkerPatch.init(mApplicationLike)
@@ -40,7 +45,11 @@ public class App extends Application {
 //        TinkerPatch.with().fetchPatchUpdateAndPollWithInterval();
     }
 
-    public static Context getContext(){
+    public static App getContext(){
         return instance;
+    }
+
+    public AppDatabase getAppDatabase() {
+        return appDatabase;
     }
 }

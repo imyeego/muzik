@@ -30,6 +30,7 @@ import android.support.v4.view.ViewCompat;
 import android.support.v4.view.ViewGroupCompat;
 import android.support.v7.app.AlertDialog;
 import android.text.TextUtils;
+import android.transition.Scene;
 import android.util.Log;
 import android.view.View;
 import android.view.ViewAnimationUtils;
@@ -45,6 +46,7 @@ import com.liuzhao.ioc_annotations.OnClick;
 import com.liuzhao.ioc_api.ViewFinder;
 import com.liuzhao.muzik.R;
 import com.liuzhao.muzik.annotation.SingleClick;
+import com.liuzhao.muzik.app.App;
 import com.liuzhao.muzik.app.Constants;
 import com.liuzhao.muzik.common.OkioSocket;
 import com.liuzhao.muzik.common.download.DownloadManager;
@@ -54,6 +56,7 @@ import com.liuzhao.muzik.common.http.Http;
 import com.liuzhao.muzik.common.http.PostCallback;
 import com.liuzhao.muzik.common.http.UploadListener;
 import com.liuzhao.muzik.common.nio.NioSocket;
+import com.liuzhao.muzik.database.TestDao;
 import com.liuzhao.muzik.model.UserBean;
 import com.liuzhao.muzik.model.bean.MovieEntity;
 import com.liuzhao.muzik.model.bean.NewsEntity;
@@ -69,11 +72,6 @@ import com.liuzhao.muzik.utils.Counter;
 import com.liuzhao.okevent.OkEvent;
 import com.liuzhao.okevent.Subscribe;
 import com.liuzhao.okevent.ThreadMode;
-
-
-import org.xutils.DbManager;
-import org.xutils.ex.DbException;
-import org.xutils.x;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -132,32 +130,24 @@ public class MainActivity extends BaseActivity<NewsPresenter> implements NewsCon
     private DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss");
     private ScheduledExecutorService scheduledService = Executors.newScheduledThreadPool(5);
     private ScheduledFuture future;
-    private DbManager dbManager;
-    private DbManager.DaoConfig config = new DbManager.DaoConfig()
-            .setDbName("student.db")
-            .setDbDir(new File(Constants.PATH))
-            .setDbVersion(1)
-            .setAllowTransaction(true)
-            .setDbUpgradeListener((db, oldVersion, newVersion) -> {
-
-            });
+    private TestDao testDao;
 
     @Override
     protected void initView() {
         OkEvent.getInstance().register(this);
         counter = Counter.create();
         ViewFinder.inject(this);
-        manager = DownloadManager.getInstance();
-        manager.setObserverProgress(this);
+        testDao = App.getContext().getAppDatabase().testDao();
+//        manager = DownloadManager.getInstance();
+//        manager.setObserverProgress(this);
 //        openWifi(context);
-        socket = new OkioSocket("172.16.41.42", 8889);
+//        socket = new OkioSocket("172.16.41.42", 8889);
         btnHello.setText("START");
 
         clHello.post(() -> {
             width = clHello.getMeasuredWidth();
         });
 
-//        saveFirstData();
 //        Intent intent = new Intent(this, NetworkService.class);
 //        startService(intent);
     }
@@ -165,9 +155,9 @@ public class MainActivity extends BaseActivity<NewsPresenter> implements NewsCon
     @OnClick(R.id.bn_hello)
     @SingleClick
     void onStart(View view){
-        Map<String, Object> map = new HashMap<>();
-        map.put("username", "liuzhao");
-        presenter.onLogin(map);
+//        Map<String, Object> map = new HashMap<>();
+//        map.put("username", "liuzhao");
+//        presenter.onLogin(map);
 //        manager.start();
 //        socket.send(str, new OkioSocket.Callback() {
 //            @Override
@@ -218,8 +208,8 @@ public class MainActivity extends BaseActivity<NewsPresenter> implements NewsCon
 //            }
 //        });
 //        animatorSet.start();
-
-
+        int size = testDao.getAll().size();
+        Toast.makeText(context, "" + size, Toast.LENGTH_SHORT).show();
     }
 
     @OnClick(R.id.bn_stop)
@@ -233,9 +223,6 @@ public class MainActivity extends BaseActivity<NewsPresenter> implements NewsCon
 //            btnStop.setText("stop");
 //        }
 //        counter.count();
-        if (future != null) {
-            future.cancel(false);
-        }
 
 //        socket.send(str1, new OkioSocket.Callback() {
 //            @Override
@@ -307,7 +294,6 @@ public class MainActivity extends BaseActivity<NewsPresenter> implements NewsCon
 //                    , Manifest.permission.WRITE_EXTERNAL_STORAGE);
 //            return;
 //        }
-//        future = scheduledService.scheduleWithFixedDelay(load, 1, 1, TimeUnit.SECONDS);
         File file = new File(Constants.DATA_PATH);
         Http.instance().upload("upload", file, new UploadListener<BaseResult>() {
             @Override
@@ -335,43 +321,6 @@ public class MainActivity extends BaseActivity<NewsPresenter> implements NewsCon
         });
     }
 
-    private void saveFirstData() {
-        dbManager = x.getDb(config);
-
-        Student student = new Student();
-        student.setAge((short) 14);
-        student.setName("刘钊");
-        student.setGender((byte) 2);
-        student.setClasses((byte) 8);
-        student.setGrade((byte) 2);
-        student.setSchool("北京101中学");
-        student.setUploaded("");
-        student.setTime(dateFormat.format(new Date()));
-        try {
-            dbManager.save(student);
-            long count = dbManager.selector(Student.class).where("upload", "=", "").count();
-            Log.e(TAG, "before:" + count);
-        } catch (DbException e) {
-            e.printStackTrace();
-        }
-
-        try {
-            Student s = dbManager.selector(Student.class).where("upload", "=", "").findFirst();
-            s.setUploaded("1");
-            s.setTime(dateFormat.format(new Date()));
-            dbManager.saveOrUpdate(s);
-//            GsonBuilder builder = new GsonBuilder();
-//            builder.excludeFieldsWithoutExposeAnnotation();
-//            builder.serializeNulls();
-//            String json = builder.create().toJson(s);
-            long count = dbManager.selector(Student.class).where("upload", "=", "").count();
-            Log.e(TAG, "after:" + count);
-//            Toast.makeText(context, "" + count, Toast.LENGTH_SHORT).show();
-
-        } catch (DbException e) {
-            e.printStackTrace();
-        }
-    }
 
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
@@ -383,7 +332,6 @@ public class MainActivity extends BaseActivity<NewsPresenter> implements NewsCon
     public void onPermissionsGranted(int requestCode, @NonNull List<String> perms) {
         switch (requestCode) {
             case WRITE_STORAGE_CODE:
-                future = scheduledService.scheduleWithFixedDelay(load, 1, 1, TimeUnit.SECONDS);
                 break;
             default:
                 break;
@@ -501,7 +449,4 @@ public class MainActivity extends BaseActivity<NewsPresenter> implements NewsCon
         return (file.exists() && file.isFile());
     }
 
-    private Runnable load = () -> {
-        saveFirstData();
-    };
 }
