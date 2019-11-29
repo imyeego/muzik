@@ -47,7 +47,7 @@ public class Http {
     private static final String NULL_DATA = "返回数据为空";
     private static Retrofit retrofit;
     private static APIService service;
-    private static Http http;
+    private static volatile Http http;
     private Handler handler;
     private Gson gson;
     private ExecutorService executorService = Executors.newCachedThreadPool();
@@ -92,13 +92,13 @@ public class Http {
                     try {
                         T t = fromJson(response.body().string(), callback);
                         if (t != null) {
-                            handler.post(() -> callback.success(t));
+                            callback.success(t);
                         } else {
-                            handler.post(() -> callback.fail(NULL_DATA));
+                            callback.fail(NULL_DATA);
                         }
                     } catch (IOException e) {
                         e.printStackTrace();
-                        handler.post(() -> callback.fail(e.getMessage()));
+                        callback.fail(e.getMessage());
                     }
 
                 }
@@ -106,7 +106,7 @@ public class Http {
 
             @Override
             public void onFailure(Call<ResponseBody> call, Throwable t) {
-                handler.post(() -> callback.fail(t.getMessage()));
+                callback.fail(t.getMessage());
 
             }
         });
@@ -138,7 +138,7 @@ public class Http {
 
             @Override
             public void onFailure(Call<ResponseBody> call, Throwable t) {
-                handler.post(() -> listener.onFail(t));
+                listener.onFail(t);
             }
         });
     }
