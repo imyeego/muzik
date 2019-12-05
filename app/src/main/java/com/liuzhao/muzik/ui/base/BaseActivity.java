@@ -1,5 +1,6 @@
 package com.liuzhao.muzik.ui.base;
 
+import android.app.Activity;
 import android.content.Context;
 import android.os.Bundle;
 import android.os.PersistableBundle;
@@ -10,7 +11,7 @@ import android.support.v7.app.AppCompatActivity;
  *
  * @author liuzhao
  */
-public abstract class BaseActivity<P extends BasePresenter> extends AppCompatActivity {
+public abstract class BaseActivity<P extends BasePresenter> extends Activity {
 
     protected P presenter;
     protected Context context;

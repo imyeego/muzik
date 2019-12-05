@@ -76,10 +76,13 @@ import com.liuzhao.okevent.ThreadMode;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.nio.channels.AsynchronousSocketChannel;
 import java.nio.charset.Charset;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -89,6 +92,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.locks.LockSupport;
 
 import okio.Buffer;
 import okio.BufferedSink;
@@ -129,15 +133,17 @@ public class MainActivity extends BaseActivity<NewsPresenter> implements NewsCon
     private OkioSocket socket;
     private DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss");
     private ScheduledExecutorService scheduledService = Executors.newScheduledThreadPool(5);
-    private ScheduledFuture future;
+    private ExecutorService service = Executors.newCachedThreadPool();
     private TestDao testDao;
+    private Object object = new Object();
+    private boolean isPause;
 
     @Override
     protected void initView() {
         OkEvent.getInstance().register(this);
         counter = Counter.create();
         ViewFinder.inject(this);
-        testDao = App.getContext().getAppDatabase().testDao();
+//        testDao = App.getContext().getAppDatabase().testDao();
 //        manager = DownloadManager.getInstance();
 //        manager.setObserverProgress(this);
 //        openWifi(context);
@@ -208,8 +214,34 @@ public class MainActivity extends BaseActivity<NewsPresenter> implements NewsCon
 //            }
 //        });
 //        animatorSet.start();
-        int size = testDao.getAll().size();
-        Toast.makeText(context, "" + size, Toast.LENGTH_SHORT).show();
+//        int size = testDao.getAll().size();
+//        Toast.makeText(context, "" + size, Toast.LENGTH_SHORT).show();
+        service.execute(() -> {
+            synchronized (object) {
+                while (true) {
+                    try {
+                        if (isPause) object.wait();
+                        Thread.sleep(1000);
+                        Log.e(TAG, "扫描中...");
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+                }
+            }
+
+        });
+
+    }
+
+    private void startScan() {
+        synchronized (object) {
+            isPause = false;
+            object.notify();
+        }
+    }
+
+    private void pauseScan() {
+        isPause = true;
     }
 
     @OnClick(R.id.bn_stop)
@@ -258,67 +290,70 @@ public class MainActivity extends BaseActivity<NewsPresenter> implements NewsCon
 //                Toast.makeText(context, err, Toast.LENGTH_SHORT).show();
 //            }
 //        });
-        Http.instance().download("dataApi/androidDB", map, new DownloadListener() {
-            @Override
-            public void onStart() {
-                Toast.makeText(context, "开始下载", Toast.LENGTH_SHORT).show();
-            }
+//        Http.instance().download("dataApi/androidDB", map, new DownloadListener() {
+//            @Override
+//            public void onStart() {
+//                Toast.makeText(context, "开始下载", Toast.LENGTH_SHORT).show();
+//            }
+//
+//            @Override
+//            public void onProgress(int progress) {
+//                progressBar.setProgress(progress);
+//                tvHello.setText("" + progress + "%");
+//            }
+//
+//            @Override
+//            public void onFinish() {
+//                Toast.makeText(context, "下载完成", Toast.LENGTH_SHORT).show();
+//
+//            }
+//
+//            @Override
+//            public void onFail(Throwable t) {
+//                Toast.makeText(context, t.getMessage(), Toast.LENGTH_SHORT).show();
+//            }
+//        });
+        pauseScan();
 
-            @Override
-            public void onProgress(int progress) {
-                progressBar.setProgress(progress);
-                tvHello.setText("" + progress + "%");
-            }
-
-            @Override
-            public void onFinish() {
-                Toast.makeText(context, "下载完成", Toast.LENGTH_SHORT).show();
-
-            }
-
-            @Override
-            public void onFail(Throwable t) {
-                Toast.makeText(context, t.getMessage(), Toast.LENGTH_SHORT).show();
-            }
-        });
 
     }
 
     @OnClick(R.id.bn_playlist)
     void onToPlaylist(View view){
-//        Intent intent = new Intent();
-//        intent.setClass(this, PlaylistActivity.class);
-//        startActivity(intent);
+        Intent intent = new Intent();
+        intent.setClass(this, PlaylistActivity.class);
+        startActivity(intent);
 //        if (!EasyPermissions.hasPermissions(this, Manifest.permission.WRITE_EXTERNAL_STORAGE)){
 //            EasyPermissions.requestPermissions(this, "请求存储权限", WRITE_STORAGE_CODE
 //                    , Manifest.permission.WRITE_EXTERNAL_STORAGE);
 //            return;
 //        }
-        File file = new File(Constants.DATA_PATH);
-        Http.instance().upload("upload", file, new UploadListener<BaseResult>() {
-            @Override
-            public void onStart() {
-                Toast.makeText(context, "开始上传", Toast.LENGTH_SHORT).show();
-            }
-
-            @Override
-            public void onProgress(int progress) {
-                progressBar.setProgress(progress);
-                tvHello.setText("" + progress + "%");
-            }
-
-            @Override
-            public void onFinish(BaseResult baseResult) {
-                Toast.makeText(context, "下载完成:" + baseResult.getCode(), Toast.LENGTH_SHORT).show();
-
-            }
-
-            @Override
-            public void onFail(Throwable t) {
-                Toast.makeText(context, t.getMessage(), Toast.LENGTH_SHORT).show();
-
-            }
-        });
+//        File file = new File(Constants.DATA_PATH);
+//        Http.instance().upload("upload", file, new UploadListener<BaseResult>() {
+//            @Override
+//            public void onStart() {
+//                Toast.makeText(context, "开始上传", Toast.LENGTH_SHORT).show();
+//            }
+//
+//            @Override
+//            public void onProgress(int progress) {
+//                progressBar.setProgress(progress);
+//                tvHello.setText("" + progress + "%");
+//            }
+//
+//            @Override
+//            public void onFinish(BaseResult baseResult) {
+//                Toast.makeText(context, "下载完成:" + baseResult.getCode(), Toast.LENGTH_SHORT).show();
+//
+//            }
+//
+//            @Override
+//            public void onFail(Throwable t) {
+//                Toast.makeText(context, t.getMessage(), Toast.LENGTH_SHORT).show();
+//
+//            }
+//        });
+//        startScan();
     }
 
 

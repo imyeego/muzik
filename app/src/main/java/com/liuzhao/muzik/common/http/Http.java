@@ -124,14 +124,12 @@ public class Http {
         call.enqueue(new Callback<ResponseBody>() {
             @Override
             public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
-                if (response != null) {
-                    if (response.isSuccessful()) {
-                        executorService.execute(() -> {
-                            writeResponseToDisk(Constants.DATA_PATH, response, listener);
-                        });
-                    } else {
+                if (response.isSuccessful()) {
+                    executorService.execute(() -> {
+                        writeResponseToDisk(Constants.DATA_PATH, response, listener);
+                    });
+                } else {
 //                        Message.obtain(handler, DOWNLOAD_FAIL, response.errorBody()).sendToTarget();
-                    }
                 }
 
             }
