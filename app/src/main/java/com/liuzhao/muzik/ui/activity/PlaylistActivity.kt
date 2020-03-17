@@ -105,9 +105,6 @@ class PlaylistActivity : AppCompatActivity() {
 
     @OnClick(R.id.tv_bar)
     fun onBar(view: View) {
-        //        Schedulers.io().createWorker().schedule(() -> {
-        //
-        //        });
         val event = SecondEvent("second")
         OkEvent.getInstance().post(event)
         Log.e(TAG, event.msg + " " + Thread.currentThread().name)

@@ -12,8 +12,11 @@ import android.content.Intent;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.ColorFilter;
+import android.graphics.DashPathEffect;
 import android.graphics.Matrix;
 import android.graphics.Paint;
+import android.graphics.Path;
+import android.graphics.PathEffect;
 import android.graphics.Point;
 import android.graphics.PorterDuffColorFilter;
 import android.graphics.Rect;
@@ -25,12 +28,18 @@ import android.os.Handler;
 import android.os.Looper;
 import android.os.MessageQueue;
 import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.support.constraint.ConstraintLayout;
+import android.support.v4.view.AsyncLayoutInflater;
 import android.support.v4.view.ViewCompat;
 import android.support.v4.view.ViewGroupCompat;
 import android.support.v7.app.AlertDialog;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.LinearSmoothScroller;
+import android.support.v7.widget.RecyclerView;
 import android.text.TextUtils;
 import android.transition.Scene;
+import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.View;
 import android.view.ViewAnimationUtils;
@@ -40,7 +49,10 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 
+import com.chad.library.adapter.base.BaseQuickAdapter;
+import com.chad.library.adapter.base.BaseViewHolder;
 import com.google.gson.GsonBuilder;
+import com.imyeego.promise.Promise;
 import com.liuzhao.ioc_annotations.BindView;
 import com.liuzhao.ioc_annotations.OnClick;
 import com.liuzhao.ioc_api.ViewFinder;
@@ -123,6 +135,14 @@ public class MainActivity extends BaseActivity<NewsPresenter> implements NewsCon
     ConstraintLayout clHello;
     @BindView(R.id.cl_stop)
     ConstraintLayout clStop;
+    @BindView(R.id.rv)
+    RecyclerView rvTimeline;
+    @BindView(R.id.bn_save)
+    Button btnSave;
+
+    private TimeLineAdapter timeLineAdapter;
+    List<TimeLine> timeLines = new ArrayList<>();
+    CenterLayoutManager layoutManager1;
     private DownloadManager manager;
     private Counter counter;
     private int width;
@@ -137,6 +157,7 @@ public class MainActivity extends BaseActivity<NewsPresenter> implements NewsCon
     private TestDao testDao;
     private Object object = new Object();
     private boolean isPause;
+    
 
     @Override
     protected void initView() {
@@ -148,6 +169,7 @@ public class MainActivity extends BaseActivity<NewsPresenter> implements NewsCon
 //        manager.setObserverProgress(this);
 //        openWifi(context);
 //        socket = new OkioSocket("172.16.41.42", 8889);
+
         btnHello.setText("START");
 
         clHello.post(() -> {
@@ -156,6 +178,14 @@ public class MainActivity extends BaseActivity<NewsPresenter> implements NewsCon
 
 //        Intent intent = new Intent(this, NetworkService.class);
 //        startService(intent);
+        layoutManager1 = new CenterLayoutManager(this, LinearLayoutManager.HORIZONTAL, false);
+        timeLineAdapter = new TimeLineAdapter(R.layout.item_timeline, timeLines);
+        rvTimeline.setLayoutManager(layoutManager1);
+        rvTimeline.addItemDecoration(new DividerItemDecoration());
+//        new LinearSnapHelper().attachToRecyclerView(rvTimeline);
+
+        rvTimeline.setAdapter(timeLineAdapter);
+        loadProgress();
     }
 
     @OnClick(R.id.bn_hello)
@@ -231,6 +261,27 @@ public class MainActivity extends BaseActivity<NewsPresenter> implements NewsCon
 
         });
 
+
+    }
+
+
+    @OnClick(R.id.bn_save)
+    public void onSave(View v) {
+
+        Promise.of(() -> {
+            int result = -1;
+            synchronized (timeLines) {
+                for (int i = 0; i < timeLines.size(); i++) {
+                    if (timeLines.get(i).current) result = i;
+                }
+                return result;
+            }
+
+        }).ui(result -> {
+//            if (result < 2) rvTimeline.smoothScrollToPosition(0);
+//            else rvTimeline.smoothScrollToPosition(result + 1);
+            layoutManager1.smoothScrollToPosition(rvTimeline, new RecyclerView.State(), result);
+        }).make();
     }
 
     private void startScan() {
@@ -242,6 +293,145 @@ public class MainActivity extends BaseActivity<NewsPresenter> implements NewsCon
 
     private void pauseScan() {
         isPause = true;
+    }
+
+    class TimeLineAdapter extends BaseQuickAdapter<TimeLine, BaseViewHolder> {
+
+        public TimeLineAdapter(int layoutResId, @Nullable List<TimeLine> data) {
+            super(layoutResId, data);
+        }
+
+        @Override
+        protected void convert(BaseViewHolder helper, TimeLine item) {
+            if (item != null) {
+            }
+            helper.setText(R.id.tv_content, "" + item.content);
+        }
+    }
+
+    class DividerItemDecoration extends RecyclerView.ItemDecoration {
+        private final static int MARGIN = 35;
+        private int top = 40, left = MARGIN, right = MARGIN;
+        private final static int radius = 6;
+        private final static int SPACE_WIDTH = radius + 5;
+        private Paint paint, paint1, paint2;
+        private PathEffect pathEffect;
+
+        public DividerItemDecoration() {
+            pathEffect = new DashPathEffect(new float[]{5, 3}, 0);
+            paint = new Paint();
+            paint.setColor(Color.BLUE);
+            paint.setAntiAlias(true);
+            paint.setStyle(Paint.Style.STROKE);
+            paint.setStrokeWidth(1);
+            paint.setPathEffect(pathEffect);
+
+
+            paint2 = new Paint();
+            paint2.setColor(Color.BLUE);
+            paint2.setAntiAlias(true);
+            paint2.setStrokeWidth(1);
+            paint2.setStyle(Paint.Style.FILL_AND_STROKE);
+
+            paint1 = new Paint();
+            paint1.setColor(Color.BLUE);
+            paint1.setAntiAlias(true);
+            paint1.setTextSize(15);
+        }
+
+        @Override
+        public void getItemOffsets(@NonNull Rect outRect, @NonNull View view, @NonNull RecyclerView parent, @NonNull RecyclerView.State state) {
+            super.getItemOffsets(outRect, view, parent, state);
+            int index = parent.getChildAdapterPosition(view);
+            List<TimeLine> list = ((TimeLineAdapter) parent.getAdapter()).getData();
+
+            if (index == 0) outRect.set(10, top, right, 10);
+            else if (index == list.size() - 1) outRect.set(left, top, 10, 10);
+            else outRect.set(left, top, right, 10);
+
+        }
+
+
+        @Override
+        public void onDraw(@NonNull Canvas c, @NonNull RecyclerView parent, @NonNull RecyclerView.State state) {
+            super.onDraw(c, parent, state);
+            int childCount = parent.getChildCount();
+            TimeLineAdapter adapter = (TimeLineAdapter) parent.getAdapter();
+            int index;
+            List<TimeLine> list = adapter.getData();
+            for (int i = 0; list.size() > 0 && i < childCount; i++) {
+                View view = parent.getChildAt(i);
+                index = parent.getChildAdapterPosition(view);
+                TimeLine timeLine = list.get(index);
+                int leftOfView = view.getLeft();
+                int rightOfView = view.getRight();
+                float y = view.getY() - 10;
+                float x = (view.getLeft() + view.getRight()) >> 1;
+                c.drawCircle(x, y, radius, paint2);
+
+                float startX = leftOfView - left;
+                float endX = rightOfView + right;
+                if (index != 0) {
+                    Path path = new Path();
+                    path.moveTo(startX, y);
+                    path.lineTo(x - SPACE_WIDTH, y);
+                    c.drawPath(path, timeLine.current ? paint2 : paint);
+                }
+                if (index != list.size() - 1) {
+                    Path path = new Path();
+                    path.moveTo(x + SPACE_WIDTH, y);
+                    path.lineTo(endX, y);
+                    c.drawPath(path, timeLine.current ? paint2 : paint);
+                }
+                float textWidth = paint1.measureText(timeLine.time);
+                float textX = x - (textWidth / 2);
+                c.drawText(timeLine.time, textX, y - 15, paint1);
+            }
+
+        }
+    }
+
+    static class TimeLine {
+        String content;
+        String time;
+        boolean current;
+
+        public TimeLine(String content, String time, boolean current) {
+            this.content = content;
+            this.time = time;
+            this.current = current;
+        }
+    }
+
+    public class CenterLayoutManager extends LinearLayoutManager {
+
+        public CenterLayoutManager(Context context, int orientation, boolean reverseLayout) {
+            super(context, orientation, reverseLayout);
+        }
+
+        @Override
+        public void smoothScrollToPosition(RecyclerView recyclerView, RecyclerView.State state, int position) {
+            RecyclerView.SmoothScroller smoothScroller = new CenterSmoothScroller(recyclerView.getContext());
+            smoothScroller.setTargetPosition(position);
+            startSmoothScroll(smoothScroller);
+        }
+
+        private class CenterSmoothScroller extends LinearSmoothScroller {
+            CenterSmoothScroller(Context context) {
+                super(context);
+            }
+
+            @Override
+            public int calculateDtToFit(int viewStart, int viewEnd, int boxStart, int boxEnd, int snapPreference) {
+                return (boxStart + (boxEnd - boxStart) / 2) - (viewStart + (viewEnd - viewStart) / 2);
+            }
+
+            @Override
+            protected float calculateSpeedPerPixel(DisplayMetrics displayMetrics) {
+                return 0.2f;
+            }
+        }
+
     }
 
     @OnClick(R.id.bn_stop)
@@ -315,14 +505,13 @@ public class MainActivity extends BaseActivity<NewsPresenter> implements NewsCon
 //        });
         pauseScan();
 
-
     }
 
     @OnClick(R.id.bn_playlist)
     void onToPlaylist(View view){
-        Intent intent = new Intent();
-        intent.setClass(this, PlaylistActivity.class);
-        startActivity(intent);
+//        Intent intent = new Intent();
+//        intent.setClass(this, PlaylistActivity.class);
+//        startActivity(intent);
 //        if (!EasyPermissions.hasPermissions(this, Manifest.permission.WRITE_EXTERNAL_STORAGE)){
 //            EasyPermissions.requestPermissions(this, "请求存储权限", WRITE_STORAGE_CODE
 //                    , Manifest.permission.WRITE_EXTERNAL_STORAGE);
@@ -354,6 +543,22 @@ public class MainActivity extends BaseActivity<NewsPresenter> implements NewsCon
 //            }
 //        });
 //        startScan();
+        loadProgress();
+
+    }
+
+    private void loadProgress() {
+        timeLines.clear();
+        int length = (int) (Math.random() * 10) + 1;
+        Promise.of(() -> {
+            for (int j = 0; j < length; j++) {
+                TimeLine timeLine = new TimeLine("进程" + j, String.format("%d:00", j), j < 5);
+                timeLines.add(timeLine);
+            }
+            return 1;
+        }).ui(i -> {
+            timeLineAdapter.notifyDataSetChanged();
+        }).make();
     }
 
 
