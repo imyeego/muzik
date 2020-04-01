@@ -1,48 +1,27 @@
 package com.liuzhao.muzik.ui.activity;
 
-import android.Manifest;
-import android.animation.Animator;
-import android.animation.AnimatorSet;
-import android.animation.FloatEvaluator;
-import android.animation.IntEvaluator;
-import android.animation.ObjectAnimator;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Canvas;
 import android.graphics.Color;
-import android.graphics.ColorFilter;
 import android.graphics.DashPathEffect;
-import android.graphics.Matrix;
 import android.graphics.Paint;
 import android.graphics.Path;
 import android.graphics.PathEffect;
-import android.graphics.Point;
-import android.graphics.PorterDuffColorFilter;
 import android.graphics.Rect;
-import android.graphics.RectF;
 import android.net.Uri;
 import android.net.wifi.WifiManager;
-import android.os.Environment;
-import android.os.Handler;
-import android.os.Looper;
-import android.os.MessageQueue;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.constraint.ConstraintLayout;
-import android.support.v4.view.AsyncLayoutInflater;
-import android.support.v4.view.ViewCompat;
-import android.support.v4.view.ViewGroupCompat;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.LinearSmoothScroller;
 import android.support.v7.widget.RecyclerView;
 import android.text.TextUtils;
-import android.transition.Scene;
 import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.View;
-import android.view.ViewAnimationUtils;
 import android.widget.Button;
 import android.widget.ProgressBar;
 import android.widget.TextView;
@@ -51,34 +30,23 @@ import android.widget.Toast;
 
 import com.chad.library.adapter.base.BaseQuickAdapter;
 import com.chad.library.adapter.base.BaseViewHolder;
-import com.google.gson.GsonBuilder;
 import com.imyeego.promise.Promise;
 import com.liuzhao.ioc_annotations.BindView;
 import com.liuzhao.ioc_annotations.OnClick;
 import com.liuzhao.ioc_api.ViewFinder;
 import com.liuzhao.muzik.R;
 import com.liuzhao.muzik.annotation.SingleClick;
-import com.liuzhao.muzik.app.App;
-import com.liuzhao.muzik.app.Constants;
+import com.liuzhao.muzik.common.OkWebSocket;
 import com.liuzhao.muzik.common.OkioSocket;
 import com.liuzhao.muzik.common.download.DownloadManager;
-import com.liuzhao.muzik.common.http.BaseResult;
-import com.liuzhao.muzik.common.http.DownloadListener;
-import com.liuzhao.muzik.common.http.Http;
-import com.liuzhao.muzik.common.http.PostCallback;
-import com.liuzhao.muzik.common.http.UploadListener;
-import com.liuzhao.muzik.common.nio.NioSocket;
 import com.liuzhao.muzik.database.TestDao;
-import com.liuzhao.muzik.model.UserBean;
 import com.liuzhao.muzik.model.bean.MovieEntity;
 import com.liuzhao.muzik.model.bean.NewsEntity;
-import com.liuzhao.muzik.model.bean.Student;
 import com.liuzhao.muzik.model.bean.User;
 import com.liuzhao.muzik.model.event.FirstEvent;
 import com.liuzhao.muzik.model.event.SecondEvent;
 import com.liuzhao.muzik.presenter.NewsContract;
 import com.liuzhao.muzik.presenter.NewsPresenter;
-import com.liuzhao.muzik.service.NetworkService;
 import com.liuzhao.muzik.ui.base.BaseActivity;
 import com.liuzhao.muzik.utils.Counter;
 import com.liuzhao.okevent.OkEvent;
@@ -86,36 +54,20 @@ import com.liuzhao.okevent.Subscribe;
 import com.liuzhao.okevent.ThreadMode;
 
 import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.nio.channels.AsynchronousSocketChannel;
-import java.nio.charset.Charset;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.ScheduledFuture;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.locks.LockSupport;
 
-import okio.Buffer;
-import okio.BufferedSink;
-import okio.BufferedSource;
-import okio.Okio;
-import okio.Source;
 import pub.devrel.easypermissions.EasyPermissions;
-import rx.Observable;
 
 public class MainActivity extends BaseActivity<NewsPresenter> implements NewsContract.View
-        , DownloadManager.ObserverProgress, EasyPermissions.PermissionCallbacks {
+        , DownloadManager.ObserverProgress, EasyPermissions.PermissionCallbacks, OkWebSocket.WebSocketCallback {
 
     private static String TAG = "MainActivity";
     private static final int WRITE_STORAGE_CODE = 455;
@@ -157,6 +109,7 @@ public class MainActivity extends BaseActivity<NewsPresenter> implements NewsCon
     private TestDao testDao;
     private Object object = new Object();
     private boolean isPause;
+    private OkWebSocket okWebsocket;
     
 
     @Override
@@ -246,24 +199,31 @@ public class MainActivity extends BaseActivity<NewsPresenter> implements NewsCon
 //        animatorSet.start();
 //        int size = testDao.getAll().size();
 //        Toast.makeText(context, "" + size, Toast.LENGTH_SHORT).show();
-        service.execute(() -> {
-            synchronized (object) {
-                while (true) {
-                    try {
-                        if (isPause) object.wait();
-                        Thread.sleep(1000);
-                        Log.e(TAG, "扫描中...");
-                    } catch (InterruptedException e) {
-                        e.printStackTrace();
-                    }
-                }
-            }
+//        service.execute(() -> {
+//            synchronized (object) {
+//                while (true) {
+//                    try {
+//                        if (isPause) object.wait();
+//                        Thread.sleep(1000);
+//                        Log.e(TAG, "扫描中...");
+//                    } catch (InterruptedException e) {
+//                        e.printStackTrace();
+//                    }
+//                }
+//            }
+//
+//        });
 
-        });
-
-
+        okWebsocket = OkWebSocket.instance()
+                .url("ws://192.168.31.80:8088/websocket/server")
+                .callback(this)
+                .connect();
     }
 
+    @Override
+    public void onMessage(String message) {
+        Toast.makeText(context, message, Toast.LENGTH_SHORT).show();
+    }
 
     @OnClick(R.id.bn_save)
     public void onSave(View v) {
@@ -503,8 +463,8 @@ public class MainActivity extends BaseActivity<NewsPresenter> implements NewsCon
 //                Toast.makeText(context, t.getMessage(), Toast.LENGTH_SHORT).show();
 //            }
 //        });
-        pauseScan();
-
+//        pauseScan();
+        okWebsocket.disconnect();
     }
 
     @OnClick(R.id.bn_playlist)
