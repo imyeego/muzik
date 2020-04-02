@@ -72,6 +72,7 @@ public class OkWebSocket {
     public OkWebSocket connect(final String url) {
         if (mWebSocket != null) {
             Log.i(TAG, "连接已经成功建立，无需重复打开");
+            return this;
         }
         request = new Request.Builder().url(url).build();
         webSocketListener = new EchoWebsocketListener();
@@ -80,6 +81,19 @@ public class OkWebSocket {
         return this;
     }
 
+    public OkWebSocket send(final String message) {
+        if (mWebSocket != null) {
+            mWebSocket.send(message);
+        }
+        return this;
+    }
+
+    private OkWebSocket send(final byte[] bytes) {
+        if (mWebSocket != null) {
+            mWebSocket.send(ByteString.of(bytes));
+        }
+        return this;
+    }
 
     private class EchoWebsocketListener extends WebSocketListener {
         @Override
