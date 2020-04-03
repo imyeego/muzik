@@ -99,7 +99,17 @@
         app:layout_constraintRight_toRightOf="parent"
         android:layout_marginLeft="10dp"
         app:layout_constraintTop_toTopOf="@id/bn_playlist"
+
         />
+    <FrameLayout
+        android:id="@+id/fl"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:layout_constraintTop_toBottomOf="@id/bn_save"
+        app:layout_constraintLeft_toLeftOf="parent"
+        >
+
+    </FrameLayout>
 
     <android.support.v7.widget.RecyclerView
         android:id="@+id/rv"
@@ -110,4 +120,22 @@
         >
 
     </android.support.v7.widget.RecyclerView>
+
+    <Button
+        android:id="@+id/btn_send"
+        android:layout_width="80dp"
+        android:layout_height="wrap_content"
+        app:layout_constraintTop_toBottomOf="@id/rv"
+        app:layout_constraintRight_toRightOf="parent"
+        android:layout_marginTop="10dp"/>
+
+    <EditText
+        android:id="@+id/ed_text"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/rv"
+        app:layout_constraintRight_toLeftOf="@id/btn_send"
+        android:layout_marginTop="10dp"
+        android:layout_marginRight="10dp"/>
 </android.support.constraint.ConstraintLayout>

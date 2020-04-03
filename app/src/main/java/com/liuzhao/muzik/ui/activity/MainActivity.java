@@ -23,6 +23,7 @@ import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -91,6 +92,10 @@ public class MainActivity extends BaseActivity<NewsPresenter> implements NewsCon
     RecyclerView rvTimeline;
     @BindView(R.id.bn_save)
     Button btnSave;
+    @BindView(R.id.btn_send)
+    Button btnSend;
+    @BindView(R.id.ed_text)
+    EditText editText;
 
     private TimeLineAdapter timeLineAdapter;
     List<TimeLine> timeLines = new ArrayList<>();
@@ -215,9 +220,17 @@ public class MainActivity extends BaseActivity<NewsPresenter> implements NewsCon
 //        });
 
         okWebsocket = OkWebSocket.instance()
-                .url("ws://192.168.31.80:8088/websocket/server")
+                .url("ws://172.16.41.35:8080/server/websocket")
                 .callback(this)
                 .connect();
+    }
+
+    @OnClick(R.id.btn_send)
+    void send(View v) {
+        String message = editText.getText().toString();
+        if (TextUtils.isEmpty(message) && okWebsocket == null) return;
+        okWebsocket.send(message);
+        editText.setText("");
     }
 
     @Override

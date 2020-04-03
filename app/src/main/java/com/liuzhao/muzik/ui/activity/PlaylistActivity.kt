@@ -4,6 +4,7 @@ import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.os.Bundle
 import android.support.v7.app.AppCompatActivity
+import android.support.v7.widget.GridLayoutManager
 import android.support.v7.widget.LinearLayoutManager
 import android.support.v7.widget.RecyclerView
 import android.util.Log
@@ -48,7 +49,7 @@ class PlaylistActivity : AppCompatActivity() {
         setContentView(R.layout.activity_playlist)
         ViewFinder.inject(this)
 
-        var layoutManager: LinearLayoutManager = LinearLayoutManager(baseContext,LinearLayoutManager.VERTICAL, false)
+        var layoutManager: LinearLayoutManager = GridLayoutManager(baseContext,3)
         recyclerView.layoutManager = layoutManager
         recyclerView.addOnScrollListener(object : RecyclerView.OnScrollListener() {
             var isScrollV = false
@@ -59,7 +60,7 @@ class PlaylistActivity : AppCompatActivity() {
 
             override fun onScrollStateChanged(recyclerView: RecyclerView, newState: Int) {
                 super.onScrollStateChanged(recyclerView, newState)
-                layoutManager = recyclerView.layoutManager as LinearLayoutManager
+                layoutManager = recyclerView.layoutManager as GridLayoutManager
                 var lastPostion = layoutManager.findLastVisibleItemPosition()
                 var totalCount = layoutManager.itemCount
                 if (newState == RecyclerView.SCROLL_STATE_SETTLING && isScrollV) {
