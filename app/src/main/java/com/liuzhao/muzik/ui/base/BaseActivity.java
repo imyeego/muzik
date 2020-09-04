@@ -6,6 +6,12 @@ import android.os.Bundle;
 import android.os.PersistableBundle;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
+import android.view.LayoutInflater;
+import android.widget.FrameLayout;
+import android.widget.ImageView;
+import android.widget.TextView;
+
+import com.liuzhao.muzik.R;
 
 /**
  *
@@ -15,11 +21,19 @@ public abstract class BaseActivity<P extends BasePresenter> extends Activity {
 
     protected P presenter;
     protected Context context;
+    protected TextView tvTitle;
+    protected FrameLayout flContent;
+    protected ImageView ivLeft;
+    protected TextView tvNetworkStatus;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(getLayoutId());
+        setContentView(R.layout.activity_base);
+        tvTitle = findViewById(R.id.tv_title);
+        ivLeft = findViewById(R.id.iv_left);
+        flContent = findViewById(R.id.content);
+        LayoutInflater.from(this).inflate(getLayoutId(), flContent);
         context = this;
         if (presenter == null) getPresenter();
         initView();

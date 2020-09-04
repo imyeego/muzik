@@ -1,5 +1,7 @@
 package com.liuzhao.muzik.ui.activity;
 
+import android.Manifest;
+import android.app.ActivityManager;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Canvas;
@@ -8,9 +10,12 @@ import android.graphics.DashPathEffect;
 import android.graphics.Paint;
 import android.graphics.Path;
 import android.graphics.PathEffect;
+import android.graphics.PorterDuff;
+import android.graphics.PorterDuffXfermode;
 import android.graphics.Rect;
 import android.net.Uri;
 import android.net.wifi.WifiManager;
+import android.os.Looper;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.constraint.ConstraintLayout;
@@ -18,13 +23,19 @@ import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.LinearSmoothScroller;
 import android.support.v7.widget.RecyclerView;
+import android.text.Html;
 import android.text.TextUtils;
+import android.util.ArrayMap;
 import android.util.DisplayMetrics;
 import android.util.Log;
+import android.util.Xml;
+import android.view.Choreographer;
+import android.view.FrameStats;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ProgressBar;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -37,6 +48,7 @@ import com.liuzhao.ioc_annotations.OnClick;
 import com.liuzhao.ioc_api.ViewFinder;
 import com.liuzhao.muzik.R;
 import com.liuzhao.muzik.annotation.SingleClick;
+import com.liuzhao.muzik.app.App;
 import com.liuzhao.muzik.common.OkWebSocket;
 import com.liuzhao.muzik.common.OkioSocket;
 import com.liuzhao.muzik.common.download.DownloadManager;
@@ -50,11 +62,13 @@ import com.liuzhao.muzik.presenter.NewsContract;
 import com.liuzhao.muzik.presenter.NewsPresenter;
 import com.liuzhao.muzik.ui.base.BaseActivity;
 import com.liuzhao.muzik.utils.Counter;
+import com.liuzhao.muzik.utils.FileUtil;
 import com.liuzhao.okevent.OkEvent;
 import com.liuzhao.okevent.Subscribe;
 import com.liuzhao.okevent.ThreadMode;
 
 import java.io.File;
+import java.nio.channels.AsynchronousFileChannel;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -122,7 +136,7 @@ public class MainActivity extends BaseActivity<NewsPresenter> implements NewsCon
         OkEvent.getInstance().register(this);
         counter = Counter.create();
         ViewFinder.inject(this);
-//        testDao = App.getContext().getAppDatabase().testDao();
+        testDao = App.getContext().getAppDatabase().testDao();
 //        manager = DownloadManager.getInstance();
 //        manager.setObserverProgress(this);
 //        openWifi(context);
@@ -203,7 +217,7 @@ public class MainActivity extends BaseActivity<NewsPresenter> implements NewsCon
 //        });
 //        animatorSet.start();
 //        int size = testDao.getAll().size();
-//        Toast.makeText(context, "" + size, Toast.LENGTH_SHORT).show();
+        Toast.makeText(context, "hello", Toast.LENGTH_SHORT).show();
 //        service.execute(() -> {
 //            synchronized (object) {
 //                while (true) {
@@ -223,6 +237,8 @@ public class MainActivity extends BaseActivity<NewsPresenter> implements NewsCon
                 .url("ws://172.16.41.35:8080/server/websocket")
                 .callback(this)
                 .connect();
+
+
     }
 
     @OnClick(R.id.btn_send)
@@ -255,6 +271,7 @@ public class MainActivity extends BaseActivity<NewsPresenter> implements NewsCon
 //            else rvTimeline.smoothScrollToPosition(result + 1);
             layoutManager1.smoothScrollToPosition(rvTimeline, new RecyclerView.State(), result);
         }).make();
+
     }
 
     private void startScan() {
@@ -478,6 +495,7 @@ public class MainActivity extends BaseActivity<NewsPresenter> implements NewsCon
 //        });
 //        pauseScan();
         okWebsocket.disconnect();
+
     }
 
     @OnClick(R.id.bn_playlist)
