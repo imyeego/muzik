@@ -7,6 +7,7 @@ import android.view.View;
  *
  * @author liuzhao
  */
+@SuppressWarnings("unchecked")
 public class ViewFinder {
     private static final ActivityProvider PROVIDER_ACTIVITY = new ActivityProvider();
     private static final ViewProvider PROVIDER_VIEW = new ViewProvider();
