@@ -60,6 +60,7 @@ import com.liuzhao.muzik.model.event.FirstEvent;
 import com.liuzhao.muzik.model.event.SecondEvent;
 import com.liuzhao.muzik.presenter.NewsContract;
 import com.liuzhao.muzik.presenter.NewsPresenter;
+import com.liuzhao.muzik.service.NetworkService;
 import com.liuzhao.muzik.ui.base.BaseActivity;
 import com.liuzhao.muzik.utils.Counter;
 import com.liuzhao.muzik.utils.FileUtil;
@@ -148,8 +149,8 @@ public class MainActivity extends BaseActivity<NewsPresenter> implements NewsCon
             width = clHello.getMeasuredWidth();
         });
 
-//        Intent intent = new Intent(this, NetworkService.class);
-//        startService(intent);
+        Intent intent = new Intent(getBaseContext(), NetworkService.class);
+        startService(intent);
         layoutManager1 = new CenterLayoutManager(this, LinearLayoutManager.HORIZONTAL, false);
         timeLineAdapter = new TimeLineAdapter(R.layout.item_timeline, timeLines);
         rvTimeline.setLayoutManager(layoutManager1);

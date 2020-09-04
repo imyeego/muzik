@@ -26,7 +26,8 @@
         </activity>
         <activity android:name=".ui.activity.PlaylistActivity"/>
         <service android:name=".service.NetworkService"
-            android:exported="false"/>
+            android:exported="false"
+            android:stopWithTask="false"/>
 
 
 

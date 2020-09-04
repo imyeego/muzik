@@ -28,7 +28,7 @@ public class NetworkService extends Service {
     }
 
     private void initHandler() {
-        HandlerThread handlerThread = new HandlerThread(TAG);
+        handlerThread = new HandlerThread(TAG);
         handlerThread.start();
         workHandler = new Handler(handlerThread.getLooper()) {
             @Override
@@ -54,11 +54,16 @@ public class NetworkService extends Service {
         return START_STICKY;
     }
 
-
+    @Override
+    public void onTaskRemoved(Intent rootIntent) {
+        super.onTaskRemoved(rootIntent);
+        Log.e(TAG, "程序关闭");
+        stopSelf();
+    }
 
     @Override
     public void onDestroy() {
-        Log.i(TAG, "destroyed ...");
+        Log.e(TAG, "destroyed ...");
         i = 0;
         workHandler.removeCallbacksAndMessages(null);
         handlerThread.quitSafely();
