@@ -67,6 +67,7 @@ import com.liuzhao.muzik.utils.FileUtil;
 import com.liuzhao.okevent.OkEvent;
 import com.liuzhao.okevent.Subscribe;
 import com.liuzhao.okevent.ThreadMode;
+import com.tencent.tinker.lib.tinker.TinkerInstaller;
 
 import java.io.File;
 import java.nio.channels.AsynchronousFileChannel;
@@ -137,7 +138,7 @@ public class MainActivity extends BaseActivity<NewsPresenter> implements NewsCon
         OkEvent.getInstance().register(this);
         counter = Counter.create();
         ViewFinder.inject(this);
-        testDao = App.getContext().getAppDatabase().testDao();
+//        testDao = App.getContext().getAppDatabase().testDao();
 //        manager = DownloadManager.getInstance();
 //        manager.setObserverProgress(this);
 //        openWifi(context);
@@ -159,6 +160,26 @@ public class MainActivity extends BaseActivity<NewsPresenter> implements NewsCon
 
         rvTimeline.setAdapter(timeLineAdapter);
         loadProgress();
+
+
+        loadPatch();
+    }
+
+    private void loadPatch() {
+        String path = "/sdcard/Tinker/";
+        File dir = new File(path);
+        if (!dir.exists()) {
+            dir.mkdirs();
+        }
+        //patch_signed_7zip.apk为我们要打的补丁包
+        File file = new File(path, "patch_signed_7zip.apk");
+        if (file.exists()) {
+            if (file.length() > 0) {
+                Log.e("我就想看看路径", file.getAbsolutePath());
+                TinkerInstaller.onReceiveUpgradePatch(MainActivity.this, file.getAbsolutePath());
+            }
+        }
+
     }
 
     @OnClick(R.id.bn_hello)
@@ -218,7 +239,7 @@ public class MainActivity extends BaseActivity<NewsPresenter> implements NewsCon
 //        });
 //        animatorSet.start();
 //        int size = testDao.getAll().size();
-        Toast.makeText(context, "hello", Toast.LENGTH_SHORT).show();
+        Toast.makeText(context, "修复前....", Toast.LENGTH_SHORT).show();
 //        service.execute(() -> {
 //            synchronized (object) {
 //                while (true) {
