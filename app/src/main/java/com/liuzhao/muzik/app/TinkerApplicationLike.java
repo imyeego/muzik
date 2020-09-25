@@ -1,6 +1,7 @@
 package com.liuzhao.muzik.app;
 
 import android.app.Application;
+import android.arch.persistence.room.Room;
 import android.content.Context;
 import android.content.Intent;
 import android.support.multidex.MultiDex;
@@ -57,6 +58,10 @@ public class TinkerApplicationLike extends DefaultApplicationLike {
         //or you can put com.tencent.tinker.** to main dex
         TinkerManager.installTinker(this);
         Tinker tinker = Tinker.with(getApplication());
+
+        appDatabase = Room.databaseBuilder(base, AppDatabase.class, Constants.DATA_PATH)
+                .allowMainThreadQueries()
+                .build();
     }
 
     public void registerActivityLifecycleCallbacks(Application.ActivityLifecycleCallbacks callback) {
@@ -64,6 +69,10 @@ public class TinkerApplicationLike extends DefaultApplicationLike {
     }
     public static Context getContext(){
         return instance;
+    }
+
+    public AppDatabase getAppDatabase() {
+        return appDatabase;
     }
 
 }

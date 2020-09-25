@@ -145,7 +145,7 @@ public class MainActivity extends BaseActivity<NewsPresenter> implements NewsCon
 //        socket = new OkioSocket("172.16.41.42", 8889);
 
         btnHello.setText("START");
-
+        btnSend.setText("send");
         clHello.post(() -> {
             width = clHello.getMeasuredWidth();
         });
@@ -162,7 +162,6 @@ public class MainActivity extends BaseActivity<NewsPresenter> implements NewsCon
         loadProgress();
 
 
-        loadPatch();
     }
 
     private void loadPatch() {
@@ -177,6 +176,7 @@ public class MainActivity extends BaseActivity<NewsPresenter> implements NewsCon
             if (file.length() > 0) {
                 Log.e("我就想看看路径", file.getAbsolutePath());
                 TinkerInstaller.onReceiveUpgradePatch(MainActivity.this, file.getAbsolutePath());
+                Toast.makeText(context, "加载修复补丁", Toast.LENGTH_SHORT).show();
             }
         }
 
@@ -239,7 +239,7 @@ public class MainActivity extends BaseActivity<NewsPresenter> implements NewsCon
 //        });
 //        animatorSet.start();
 //        int size = testDao.getAll().size();
-        Toast.makeText(context, "修复前....", Toast.LENGTH_SHORT).show();
+        Toast.makeText(context, "我是tinker第四次修复....", Toast.LENGTH_SHORT).show();
 //        service.execute(() -> {
 //            synchronized (object) {
 //                while (true) {
@@ -265,10 +265,11 @@ public class MainActivity extends BaseActivity<NewsPresenter> implements NewsCon
 
     @OnClick(R.id.btn_send)
     void send(View v) {
-        String message = editText.getText().toString();
-        if (TextUtils.isEmpty(message) && okWebsocket == null) return;
-        okWebsocket.send(message);
-        editText.setText("");
+//        String message = editText.getText().toString();
+//        if (TextUtils.isEmpty(message) && okWebsocket == null) return;
+//        okWebsocket.send(message);
+//        editText.setText("");
+        loadPatch();
     }
 
     @Override
