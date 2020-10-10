@@ -33,10 +33,14 @@ public class BitmapUtil {
     }
 
     public static Bitmap nv21ToBitmap(byte[] data, int width, int height, int orientation) {
+        int width_ = width, height_ = height;
+        if (orientation == 90 || orientation == 270) {
+            int temp = width_;
+            width_ = height_;
+            height_ = temp;
+        }
         if (rgbaType == null) {
-
-            if (orientation == 90 || orientation == 270) rgbaType = new Type.Builder(rs, Element.RGBA_8888(rs)).setX(height).setY(width);
-            else rgbaType = new Type.Builder(rs, Element.RGBA_8888(rs)).setX(width).setY(height);
+            rgbaType = new Type.Builder(rs, Element.RGBA_8888(rs)).setX(width_).setY(height_);
             out = Allocation.createTyped(rs, rgbaType.create(), Allocation.USAGE_SCRIPT);
         }
         byte[] dst;
@@ -55,14 +59,9 @@ public class BitmapUtil {
 
         yuvToRgbIntrinsic.setInput(in);
         yuvToRgbIntrinsic.forEach(out);
-        Bitmap bmpout;
-        if (orientation == 90 || orientation == 270) {
-            bmpout = Bitmap.createBitmap(height, width, Bitmap.Config.ARGB_8888);
-
-        } else {
-            bmpout = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
-        }
+        Bitmap bmpout = Bitmap.createBitmap(width_, height_, Bitmap.Config.ARGB_8888);
         out.copyTo(bmpout);
+        dst = null;
         return bmpout;
     }
 }

@@ -32,9 +32,16 @@ android {
         }
     }
 
-    externalNativeBuild {
-        cmake {
-            path 'CMakeLists.txt'
+//    externalNativeBuild {
+//        cmake {
+//            path 'CMakeLists.txt'
+//        }
+//    }
+
+    sourceSets {
+        main {
+            jniLibs.srcDirs 'src/main/libs'
+            jni.srcDirs = []
         }
     }
 }

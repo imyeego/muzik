@@ -106,7 +106,7 @@ public class CameraActivity extends BaseActivity<NewsPresenter> implements Camer
 
     private void display(byte[] data, int width, int height) {
         long start = System.currentTimeMillis();
-        Bitmap bitmap = BitmapUtil.nv21ToBitmap(data, width, height, 0);
+        Bitmap bitmap = BitmapUtil.nv21ToBitmap(data, width, height, mCamera.getDegree());
         Log.e("convert cost", "" + (System.currentTimeMillis() - start) + "");
         imageView.setImageBitmap(bitmap);
     }

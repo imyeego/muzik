@@ -75,7 +75,11 @@ android {
         jumboMode = true
     }
     buildToolsVersion '28.0.3'
-
+    repositories{
+        flatDir{
+            dirs 'libs'
+        }
+    }
 
 }
 
@@ -106,7 +110,7 @@ dependencies {
     implementation project(':ioc-api')
     implementation project(':ioc-annotations')
     implementation project(':okevent')
-    implementation project(':libyuv')
+//    implementation project(':libyuv')
 
     implementation 'org.aspectj:aspectjrt:1.8.13'
     implementation 'pub.devrel:easypermissions:1.2.0'
@@ -126,5 +130,5 @@ dependencies {
     annotationProcessor("com.tencent.tinker:tinker-android-anno:$tinker_version") { changing = true }
     compileOnly("com.tencent.tinker:tinker-android-anno:$tinker_version") { changing = true }
     implementation "com.android.support:multidex:1.0.1"
-
+    implementation(name:'libyuv', ext:'aar')
 }
