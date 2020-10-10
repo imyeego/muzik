@@ -90,7 +90,7 @@ public class FilterEngine {
             -1f, -1f, 0f, 0.125f,
             1f, -1f, 1f, 0.125f
     };
-
+    // 原始数组 6 * 4 形式的一维数组，前两列顶点数组，后两列为纹理数组
     /*private static final float[] vertexData = {
             1f, 1f, 1f, 1f,
             -1f, 1f, 0f, 1f,
@@ -100,7 +100,7 @@ public class FilterEngine {
             1f, -1f, 1f, 0f
     };*/
 
-    // 6 * 4 形式的一维数组，前两列顶点数组，后两列为纹理数组
+    // 水平镜像数组
     /*private static final float[] vertexData = {
             1f, 1f, 0f, 1f,
             -1f, 1f, 1f, 1f,
