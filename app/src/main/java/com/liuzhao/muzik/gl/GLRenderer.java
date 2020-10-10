@@ -22,7 +22,7 @@ import javax.microedition.khronos.egl.EGLSurface;
  * Created by lb6905 on 2017/6/28.
  */
 
-public class CameraV1GLRenderer implements SurfaceTexture.OnFrameAvailableListener {
+public class GLRenderer implements SurfaceTexture.OnFrameAvailableListener {
     private static final String TAG = "Filter_GLRenderer";
     private Context mContext;
     private HandlerThread mHandlerThread;
@@ -45,10 +45,11 @@ public class CameraV1GLRenderer implements SurfaceTexture.OnFrameAvailableListen
     private static final int MSG_DEINIT = 3;
     private SurfaceTexture mOESSurfaceTexture;
 
-    public void init(TextureView textureView, int oesTextureId, Context context) {
+    public void init(TextureView textureView, Context context) {
         mContext = context;
         mTextureView = textureView;
-        mOESTextureId = oesTextureId;
+        mOESTextureId = Utils.createOESTextureObject();
+
         mHandlerThread = new HandlerThread("Renderer Thread");
         mHandlerThread.start();
         mHandler = new Handler(mHandlerThread.getLooper()){
@@ -60,8 +61,6 @@ public class CameraV1GLRenderer implements SurfaceTexture.OnFrameAvailableListen
                         return;
                     case MSG_RENDER:
                         drawFrame();
-                        return;
-                    case MSG_DEINIT:
                         return;
                     default:
                         return;
@@ -146,7 +145,7 @@ public class CameraV1GLRenderer implements SurfaceTexture.OnFrameAvailableListen
         mFilterEngine.drawTexture(transformMatrix);
         mEgl.eglSwapBuffers(mEGLDisplay, mEglSurface);
         t2 = System.currentTimeMillis();
-        Log.i(TAG, "drawFrame: time = " + (t2 - t1));
+//        Log.i(TAG, "drawFrame: time = " + (t2 - t1));
     }
 
     @Override
@@ -157,7 +156,7 @@ public class CameraV1GLRenderer implements SurfaceTexture.OnFrameAvailableListen
         }
     }
 
-    public SurfaceTexture initOESTexture() {
+    public SurfaceTexture createOESTexture() {
         mOESSurfaceTexture = new SurfaceTexture(mOESTextureId);
         mOESSurfaceTexture.setOnFrameAvailableListener(this);
         return mOESSurfaceTexture;

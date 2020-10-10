@@ -77,16 +77,28 @@ public class NioSocket {
         return instance;
     }
 
+
+    /**
+      * @authur : liuzhao
+      * @time : 2020/9/7 10:06 PM
+      * @param : 
+      * @return : 
+      * @des:
+      */
     public NioSocket requireHearbeatWithUdp(boolean is) {
         this.isRequireHearbeatWithUdp = is;
 
         return instance;
     }
 
+
+
     public NioSocket setHostAndPort(String host, int port) {
+        
         tcpAddress = new InetSocketAddress(host, port);
         return instance;
     }
+
 
     public NioSocket build() {
         try {

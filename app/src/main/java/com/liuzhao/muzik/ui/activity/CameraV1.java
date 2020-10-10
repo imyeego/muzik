@@ -8,6 +8,7 @@ import android.util.Log;
 import android.view.Surface;
 
 import java.io.IOException;
+import java.util.List;
 
 /**
  * Created by lb6905 on 2017/6/27.
@@ -19,26 +20,31 @@ public class CameraV1 implements Camera.PreviewCallback{
     private Camera mCamera;
     private PreviewCallback mPreviewCallback;
     private int previewWidth, previewHeight;
+    private int degree = 90;
+    public static final int width = 1280, height = 960;
 
     public CameraV1(Activity activity) {
         mActivity = activity;
     }
 
-    public boolean openCamera(int screenWidth, int screenHeight, int cameraId) {
+    public boolean openCamera() {
         try {
-            mCameraId = cameraId;
+            mCameraId = Camera.CameraInfo.CAMERA_FACING_FRONT;
+
             mCamera = Camera.open(mCameraId);
             Camera.Parameters parameters = mCamera.getParameters();
             Log.e("numbers of cameras", "" + Camera.getNumberOfCameras());
             parameters.set("orientation", "portrait");
+
 //            parameters.setFocusMode(Camera.Parameters.FOCUS_MODE_CONTINUOUS_PICTURE);
-            parameters.setPreviewSize(800, 600);
+            parameters.setPreviewSize(width, height);
             setCameraDisplayOrientation(mActivity, mCameraId, mCamera);
+            supportedPreviewSize(mCamera);
             mCamera.setParameters(parameters);
             previewWidth = mCamera.getParameters().getPreviewSize().width;
             previewHeight = mCamera.getParameters().getPreviewSize().height;
             mCamera.setPreviewCallbackWithBuffer(this);
-            byte[] buffer = new byte[800 * 600 * ImageFormat.getBitsPerPixel(ImageFormat.NV21) * 2 / 3];
+            byte[] buffer = new byte[width * height * ImageFormat.getBitsPerPixel(ImageFormat.NV21) * 2 / 3];
             mCamera.addCallbackBuffer(buffer);
             Log.i("lb6905", "open camera");
         } catch (Exception e) {
@@ -48,7 +54,7 @@ public class CameraV1 implements Camera.PreviewCallback{
         return true;
     }
 
-    public static void setCameraDisplayOrientation(Activity activity,
+    public void setCameraDisplayOrientation(Activity activity,
                                                    int cameraId, android.hardware.Camera camera) {
         android.hardware.Camera.CameraInfo info =
                 new android.hardware.Camera.CameraInfo();
@@ -74,8 +80,21 @@ public class CameraV1 implements Camera.PreviewCallback{
             result = (info.orientation - degrees + 360) % 360;
         }
         Log.e("result", " " + result);
+        degree = result;
         camera.setDisplayOrientation(result);
 
+    }
+
+    private void supportedPreviewSize(Camera mCamera) {
+        Camera.Parameters camPara = mCamera.getParameters();
+        List<Camera.Size> allSupportedSize = camPara.getSupportedPreviewSizes();
+        for (Camera.Size tmpSize : allSupportedSize) {
+            Log.i("metrics", "support height" + tmpSize.height + "width " + tmpSize.width);
+        }
+    }
+
+    public int getDegree() {
+        return degree;
     }
 
     @Override

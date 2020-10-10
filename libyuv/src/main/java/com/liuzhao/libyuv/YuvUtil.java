@@ -8,7 +8,7 @@ package com.liuzhao.libyuv;
 public class YuvUtil {
 
     static {
-        System.loadLibrary("yuvutils");
+        System.loadLibrary("yuvutil");
     }
 
 

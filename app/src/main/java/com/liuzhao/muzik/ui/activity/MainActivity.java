@@ -1,7 +1,5 @@
 package com.liuzhao.muzik.ui.activity;
 
-import android.Manifest;
-import android.app.ActivityManager;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Canvas;
@@ -10,12 +8,10 @@ import android.graphics.DashPathEffect;
 import android.graphics.Paint;
 import android.graphics.Path;
 import android.graphics.PathEffect;
-import android.graphics.PorterDuff;
-import android.graphics.PorterDuffXfermode;
 import android.graphics.Rect;
+import android.graphics.SurfaceTexture;
 import android.net.Uri;
 import android.net.wifi.WifiManager;
-import android.os.Looper;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.constraint.ConstraintLayout;
@@ -23,19 +19,14 @@ import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.LinearSmoothScroller;
 import android.support.v7.widget.RecyclerView;
-import android.text.Html;
 import android.text.TextUtils;
-import android.util.ArrayMap;
 import android.util.DisplayMetrics;
 import android.util.Log;
-import android.util.Xml;
-import android.view.Choreographer;
-import android.view.FrameStats;
+import android.view.TextureView;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ProgressBar;
-import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -48,11 +39,11 @@ import com.liuzhao.ioc_annotations.OnClick;
 import com.liuzhao.ioc_api.ViewFinder;
 import com.liuzhao.muzik.R;
 import com.liuzhao.muzik.annotation.SingleClick;
-import com.liuzhao.muzik.app.App;
 import com.liuzhao.muzik.common.OkWebSocket;
 import com.liuzhao.muzik.common.OkioSocket;
 import com.liuzhao.muzik.common.download.DownloadManager;
 import com.liuzhao.muzik.database.TestDao;
+import com.liuzhao.muzik.gl.GLRenderer;
 import com.liuzhao.muzik.model.bean.MovieEntity;
 import com.liuzhao.muzik.model.bean.NewsEntity;
 import com.liuzhao.muzik.model.bean.User;
@@ -63,14 +54,12 @@ import com.liuzhao.muzik.presenter.NewsPresenter;
 import com.liuzhao.muzik.service.NetworkService;
 import com.liuzhao.muzik.ui.base.BaseActivity;
 import com.liuzhao.muzik.utils.Counter;
-import com.liuzhao.muzik.utils.FileUtil;
 import com.liuzhao.okevent.OkEvent;
 import com.liuzhao.okevent.Subscribe;
 import com.liuzhao.okevent.ThreadMode;
 import com.tencent.tinker.lib.tinker.TinkerInstaller;
 
 import java.io.File;
-import java.nio.channels.AsynchronousFileChannel;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -112,6 +101,16 @@ public class MainActivity extends BaseActivity<NewsPresenter> implements NewsCon
     Button btnSend;
     @BindView(R.id.ed_text)
     EditText editText;
+    @BindView(R.id.texture_view)
+    TextureView textureView;
+
+    private SurfaceTexture surfaceTexture;
+    private int mOESTextureId = -1;
+    private int mCameraId;
+    private CameraV1 mCamera;
+    private GLRenderer mRenderer;
+
+
 
     private TimeLineAdapter timeLineAdapter;
     List<TimeLine> timeLines = new ArrayList<>();
@@ -150,8 +149,8 @@ public class MainActivity extends BaseActivity<NewsPresenter> implements NewsCon
             width = clHello.getMeasuredWidth();
         });
 
-        Intent intent = new Intent(getBaseContext(), NetworkService.class);
-        startService(intent);
+//        Intent intent = new Intent(getBaseContext(), NetworkService.class);
+//        startService(intent);
         layoutManager1 = new CenterLayoutManager(this, LinearLayoutManager.HORIZONTAL, false);
         timeLineAdapter = new TimeLineAdapter(R.layout.item_timeline, timeLines);
         rvTimeline.setLayoutManager(layoutManager1);
@@ -256,7 +255,7 @@ public class MainActivity extends BaseActivity<NewsPresenter> implements NewsCon
 //        });
 
         okWebsocket = OkWebSocket.instance()
-                .url("ws://172.16.41.35:8080/server/websocket")
+                .url("ws://192.168.137.10:8088/websocket")
                 .callback(this)
                 .connect();
 
@@ -275,6 +274,7 @@ public class MainActivity extends BaseActivity<NewsPresenter> implements NewsCon
     @Override
     public void onMessage(String message) {
         Toast.makeText(context, message, Toast.LENGTH_SHORT).show();
+
     }
 
     @OnClick(R.id.bn_save)
@@ -306,6 +306,14 @@ public class MainActivity extends BaseActivity<NewsPresenter> implements NewsCon
 
     private void pauseScan() {
         isPause = true;
+    }
+
+
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+
     }
 
     class TimeLineAdapter extends BaseQuickAdapter<TimeLine, BaseViewHolder> {
@@ -479,8 +487,8 @@ public class MainActivity extends BaseActivity<NewsPresenter> implements NewsCon
 //        map.put("harddata", "BD8A11910051");
 //        map.put("taskcode", "jyd");
 
-        map.put("schoolcode", "86.63.27.003");
-        map.put("taskcode", "1");
+//        map.put("schoolcode", "86.63.27.003");
+//        map.put("taskcode", "1");
 
 //        Http.instance().postMap("login/appDoLogin", map, new PostCallback<UserBean>() {
 //            @Override
@@ -517,8 +525,8 @@ public class MainActivity extends BaseActivity<NewsPresenter> implements NewsCon
 //            }
 //        });
 //        pauseScan();
-        okWebsocket.disconnect();
-
+//        okWebsocket.disconnect();
+        startActivity(new Intent(context, CameraActivity.class));
     }
 
     @OnClick(R.id.bn_playlist)

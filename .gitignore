@@ -21,3 +21,5 @@
 /okevent/build
 /okevent/*.iml
 
+/libyuv/build
+/libyuv/*.iml

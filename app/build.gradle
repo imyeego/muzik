@@ -11,8 +11,8 @@ android {
         applicationId "com.liuzhao.muzik"
         minSdkVersion 19
         targetSdkVersion 28
-        versionCode 5
-        versionName "1.0.5"
+        versionCode 6
+        versionName "1.0.6"
         multiDexEnabled true
 //        multiDexKeepProguard file("tinkerMultidexKeep.pro") //keep specific classes using proguard syntax
 //        testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
@@ -58,9 +58,16 @@ android {
         targetCompatibility JavaVersion.VERSION_1_8
     }
 
+//    externalNativeBuild{
+//        ndkBuild {
+//            path "src/main/jni/Android.mk"
+//        }
+//    }
+
     sourceSets {
         main {
-            jniLibs.srcDirs = ['libs']
+            jniLibs.srcDirs 'src/main/libs'
+            jni.srcDirs = []
         }
     }
     dexOptions {
@@ -99,13 +106,15 @@ dependencies {
     implementation project(':ioc-api')
     implementation project(':ioc-annotations')
     implementation project(':okevent')
+    implementation project(':libyuv')
+
     implementation 'org.aspectj:aspectjrt:1.8.13'
     implementation 'pub.devrel:easypermissions:1.2.0'
     //    annotationProcessor("com.tinkerpatch.tinker:tinker-android-anno:${TINKER_VERSION}") { changing = true }
     //    compileOnly("com.tinkerpatch.tinker:tinker-android-anno:${TINKER_VERSION}") { changing = true }
     //    implementation("com.tinkerpatch.sdk:tinkerpatch-android-sdk:${TINKERPATCH_VERSION}") { changing = true }
     implementation 'com.android.support:multidex:1.0.2'
-    implementation 'com.imyeego.promise:promise-all:1.0.4'
+    implementation 'com.imyeego.promise:promise-all:1.0.5'
     implementation 'com.github.ikidou:TypeBuilder:1.0'
     implementation "android.arch.persistence.room:runtime:$room_version"
     kapt "android.arch.persistence.room:compiler:$room_version"

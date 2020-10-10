@@ -22,7 +22,7 @@ public class OkWebSocket {
     private volatile WebSocket mWebSocket;
     private WebSocketCallback callback;
     private WebSocketListener webSocketListener;
-    private Object lock = new Object();
+    private final Object lock = new Object();
     private boolean flag = true;
     private Request request;
 
