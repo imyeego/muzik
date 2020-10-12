@@ -9,6 +9,8 @@ import android.os.Message;
 import android.support.annotation.Nullable;
 import android.util.Log;
 
+import com.liuzhao.muzik.common.OkHttpUtil;
+
 import java.util.concurrent.TimeUnit;
 
 import rx.schedulers.Schedulers;
@@ -37,8 +39,24 @@ public class NetworkService extends Service {
             }
         };
         Schedulers.newThread().createWorker().schedulePeriodically(() -> {
+            testToken();
             workHandler.sendEmptyMessage(++i);
         }, 0, 1000, TimeUnit.MILLISECONDS);
+    }
+
+    private void testToken() {
+
+        OkHttpUtil.getInstance().get("http://172.16.41.110:8088/user/liuzhao", new OkHttpUtil.HttpCallback() {
+            @Override
+            public void onSuccess(String response) {
+                Log.e("TokenInterceptor", response);
+            }
+
+            @Override
+            public void onFailure(Throwable e) {
+                e.printStackTrace();
+            }
+        });
     }
 
     @Nullable

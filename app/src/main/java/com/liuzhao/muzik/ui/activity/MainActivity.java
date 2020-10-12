@@ -39,6 +39,7 @@ import com.liuzhao.ioc_annotations.OnClick;
 import com.liuzhao.ioc_api.ViewFinder;
 import com.liuzhao.muzik.R;
 import com.liuzhao.muzik.annotation.SingleClick;
+import com.liuzhao.muzik.common.OkHttpUtil;
 import com.liuzhao.muzik.common.OkWebSocket;
 import com.liuzhao.muzik.common.OkioSocket;
 import com.liuzhao.muzik.common.download.DownloadManager;
@@ -149,8 +150,8 @@ public class MainActivity extends BaseActivity<NewsPresenter> implements NewsCon
             width = clHello.getMeasuredWidth();
         });
 
-//        Intent intent = new Intent(getBaseContext(), NetworkService.class);
-//        startService(intent);
+        Intent intent = new Intent(getBaseContext(), NetworkService.class);
+        startService(intent);
         layoutManager1 = new CenterLayoutManager(this, LinearLayoutManager.HORIZONTAL, false);
         timeLineAdapter = new TimeLineAdapter(R.layout.item_timeline, timeLines);
         rvTimeline.setLayoutManager(layoutManager1);
@@ -270,6 +271,8 @@ public class MainActivity extends BaseActivity<NewsPresenter> implements NewsCon
 //        editText.setText("");
         loadPatch();
     }
+
+
 
     @Override
     public void onMessage(String message) {

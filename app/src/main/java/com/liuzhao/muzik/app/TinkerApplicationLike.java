@@ -10,6 +10,7 @@ import com.liuzhao.muzik.database.AppDatabase;
 import com.liuzhao.muzik.tinker.log.MyLogImp;
 import com.liuzhao.muzik.tinker.util.SampleApplicationContext;
 import com.liuzhao.muzik.tinker.util.TinkerManager;
+import com.liuzhao.muzik.utils.SharedPreferencesUtil;
 import com.tencent.tinker.anno.DefaultLifeCycle;
 import com.tencent.tinker.entry.DefaultApplicationLike;
 import com.tencent.tinker.lib.tinker.Tinker;
@@ -30,6 +31,8 @@ public class TinkerApplicationLike extends DefaultApplicationLike {
 
     private static Context instance;
     private AppDatabase appDatabase;
+    private SharedPreferencesUtil spUtil = new SharedPreferencesUtil();
+
 
     public TinkerApplicationLike(Application application, int tinkerFlags, boolean tinkerLoadVerifyFlag,
                                  long applicationStartElapsedTime, long applicationStartMillisTime, Intent tinkerResultIntent) {
@@ -59,6 +62,7 @@ public class TinkerApplicationLike extends DefaultApplicationLike {
         TinkerManager.installTinker(this);
         Tinker tinker = Tinker.with(getApplication());
 
+        spUtil.init(base, "muzik");
         appDatabase = Room.databaseBuilder(base, AppDatabase.class, Constants.DATA_PATH)
                 .allowMainThreadQueries()
                 .build();
