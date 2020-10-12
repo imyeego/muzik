@@ -83,11 +83,6 @@ android {
 
 }
 
-repositories {
-    flatDir {
-        dirs 'libs'
-    }
-}
 dependencies {
     implementation fileTree(include: ['*.jar'], dir: 'libs')
     implementation 'com.android.support:appcompat-v7:28.0.0'
@@ -96,14 +91,14 @@ dependencies {
     implementation 'com.android.support:recyclerview-v7:28.0.0'
     androidTestImplementation 'com.android.support.test:runner:1.0.2'
     androidTestImplementation 'com.android.support.test.espresso:espresso-core:3.0.2'
-    implementation 'com.squareup.okhttp3:okhttp:3.10.0'
+    implementation "com.squareup.okhttp3:okhttp:$okhttp_version"
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
-    implementation 'io.reactivex:rxjava:1.1.0'
-    implementation 'io.reactivex:rxandroid:1.1.0'
-    implementation 'com.squareup.retrofit2:retrofit:2.4.0'
-    implementation 'com.squareup.retrofit2:converter-gson:2.4.0'
-    implementation 'com.squareup.retrofit2:adapter-rxjava:2.4.0'
-    implementation 'com.google.code.gson:gson:2.6.2'
+    implementation "io.reactivex:rxjava:$rx_version"
+    implementation "io.reactivex:rxandroid:$rx_version"
+    implementation "com.squareup.retrofit2:retrofit:$retrofit_version"
+    implementation "com.squareup.retrofit2:converter-gson:$retrofit_version"
+    implementation "com.squareup.retrofit2:adapter-rxjava:$retrofit_version"
+    implementation "com.google.code.gson:gson:$gson_version"
     implementation 'com.orhanobut:logger:1.15'
 //        annotationProcessor project(path: ':ioc-complier')
     kapt project(path: ':ioc-complier')
@@ -114,9 +109,6 @@ dependencies {
 
     implementation 'org.aspectj:aspectjrt:1.8.13'
     implementation 'pub.devrel:easypermissions:1.2.0'
-    //    annotationProcessor("com.tinkerpatch.tinker:tinker-android-anno:${TINKER_VERSION}") { changing = true }
-    //    compileOnly("com.tinkerpatch.tinker:tinker-android-anno:${TINKER_VERSION}") { changing = true }
-    //    implementation("com.tinkerpatch.sdk:tinkerpatch-android-sdk:${TINKERPATCH_VERSION}") { changing = true }
     implementation 'com.android.support:multidex:1.0.2'
     implementation 'com.imyeego.promise:promise-all:1.0.5'
     implementation 'com.github.ikidou:TypeBuilder:1.0'
@@ -124,11 +116,10 @@ dependencies {
     kapt "android.arch.persistence.room:compiler:$room_version"
     implementation 'com.github.CymChad:BaseRecyclerViewAdapterHelper:2.9.30'
 
-    api("com.tencent.tinker:tinker-android-lib:1.9.14") { changing = true }
+    api("com.tencent.tinker:tinker-android-lib:$tinker_version") { changing = true }
     // Maven local cannot handle transist dependencies.
     implementation("com.tencent.tinker:tinker-android-loader:$tinker_version") { changing = true }
     annotationProcessor("com.tencent.tinker:tinker-android-anno:$tinker_version") { changing = true }
     compileOnly("com.tencent.tinker:tinker-android-anno:$tinker_version") { changing = true }
-    implementation "com.android.support:multidex:1.0.1"
     implementation(name:'libyuv', ext:'aar')
 }
