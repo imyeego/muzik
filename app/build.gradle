@@ -1,9 +1,16 @@
+import java.text.SimpleDateFormat
+
 apply plugin: 'com.android.application'
 apply plugin: 'com.hujiang.android-aspectjx'
 apply plugin: 'kotlin-android'
 apply plugin: 'kotlin-kapt'
 apply plugin: 'kotlin-android-extensions'
 apply from: 'tinker.gradle'
+
+
+def releaseTime() {
+    return new Date().format("yyyyMMdd", TimeZone.getTimeZone("UTC"))
+}
 
 android {
     compileSdkVersion 28
@@ -25,10 +32,12 @@ android {
     signingConfigs {
         release {
             try {
+                Properties properties = new Properties()
+                properties.load(project.rootProject.file('local.properties').newDataInputStream())
                 storeFile file("./keystore/release.jks")
-                storePassword "muzik0526"
-                keyAlias "key0"
-                keyPassword "muzik0526"
+                storePassword properties.getProperty("keyPassword")
+                keyAlias properties.getProperty("keyAlias")
+                keyPassword properties.getProperty("keyPassword")
             } catch (ex) {
                 throw new InvalidUserDataException(ex.toString())
             }
@@ -41,6 +50,7 @@ android {
 
     buildTypes {
         release {
+
             minifyEnabled false
             signingConfig signingConfigs.release
             proguardFiles getDefaultProguardFile('proguard-android.txt'), project.file('proguard-rules.pro')
@@ -52,6 +62,14 @@ android {
         }
     }
 
+    applicationVariants.all { variant ->
+        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyyMMddHHmm")
+        def dateFlag = dateFormat.format(new Date())
+        variant.outputs.all {
+            def newName = "muzik v" + variant.versionName + " [build" + dateFlag + "].apk"
+            outputFileName = newName
+        }
+    }
 
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_1_8
@@ -115,6 +133,8 @@ dependencies {
     implementation "android.arch.persistence.room:runtime:$room_version"
     kapt "android.arch.persistence.room:compiler:$room_version"
     implementation 'com.github.CymChad:BaseRecyclerViewAdapterHelper:2.9.30'
+    implementation 'com.hjq:toast:8.8'
+    implementation 'com.github.lihangleo2:ShadowLayout:3.0.4'
 
     api("com.tencent.tinker:tinker-android-lib:$tinker_version") { changing = true }
     // Maven local cannot handle transist dependencies.
