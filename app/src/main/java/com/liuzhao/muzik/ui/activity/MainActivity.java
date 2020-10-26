@@ -12,6 +12,8 @@ import android.graphics.Rect;
 import android.graphics.SurfaceTexture;
 import android.net.Uri;
 import android.net.wifi.WifiManager;
+import android.os.Build;
+import android.os.Process;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.constraint.ConstraintLayout;
@@ -22,6 +24,8 @@ import android.support.v7.widget.RecyclerView;
 import android.text.TextUtils;
 import android.util.DisplayMetrics;
 import android.util.Log;
+import android.view.Gravity;
+import android.view.KeyEvent;
 import android.view.TextureView;
 import android.view.View;
 import android.widget.Button;
@@ -33,7 +37,11 @@ import android.widget.Toast;
 
 import com.chad.library.adapter.base.BaseQuickAdapter;
 import com.chad.library.adapter.base.BaseViewHolder;
+import com.hjq.toast.IToastStyle;
+import com.hjq.toast.ToastUtils;
+import com.hjq.toast.style.BaseToastStyle;
 import com.imyeego.promise.Promise;
+import com.imyeego.promise.Utils;
 import com.liuzhao.ioc_annotations.BindView;
 import com.liuzhao.ioc_annotations.OnClick;
 import com.liuzhao.ioc_api.ViewFinder;
@@ -52,9 +60,11 @@ import com.liuzhao.muzik.model.event.FirstEvent;
 import com.liuzhao.muzik.model.event.SecondEvent;
 import com.liuzhao.muzik.presenter.NewsContract;
 import com.liuzhao.muzik.presenter.NewsPresenter;
+import com.liuzhao.muzik.service.BootService;
 import com.liuzhao.muzik.service.NetworkService;
 import com.liuzhao.muzik.ui.base.BaseActivity;
 import com.liuzhao.muzik.utils.Counter;
+import com.liuzhao.muzik.utils.ScreenUtil;
 import com.liuzhao.okevent.OkEvent;
 import com.liuzhao.okevent.Subscribe;
 import com.liuzhao.okevent.ThreadMode;
@@ -131,6 +141,7 @@ public class MainActivity extends BaseActivity<NewsPresenter> implements NewsCon
     private Object object = new Object();
     private boolean isPause;
     private OkWebSocket okWebsocket;
+    private Intent intent;
     
 
     @Override
@@ -150,8 +161,19 @@ public class MainActivity extends BaseActivity<NewsPresenter> implements NewsCon
             width = clHello.getMeasuredWidth();
         });
 
-        Intent intent = new Intent(getBaseContext(), NetworkService.class);
-        startService(intent);
+//        intent = new Intent(getBaseContext(), NetworkService.class);
+//        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+//            startForegroundService(intent);
+//            Intent bootIntent = new Intent(getBaseContext(), BootService.class);
+//            startService(bootIntent);
+//
+//            Utils.getMainHandler().postDelayed(() -> {
+//                stopService(bootIntent);
+//            }, 1000);
+//        } else {
+//            startService(intent);
+//        }
+
         layoutManager1 = new CenterLayoutManager(this, LinearLayoutManager.HORIZONTAL, false);
         timeLineAdapter = new TimeLineAdapter(R.layout.item_timeline, timeLines);
         rvTimeline.setLayoutManager(layoutManager1);
@@ -161,6 +183,54 @@ public class MainActivity extends BaseActivity<NewsPresenter> implements NewsCon
         rvTimeline.setAdapter(timeLineAdapter);
         loadProgress();
 
+
+
+    }
+
+    private void showToast() {
+        ToastUtils.initStyle(new CustomStyle(this));
+        ToastUtils.show("验 证 成 功");
+    }
+
+    class CustomStyle extends BaseToastStyle {
+        public CustomStyle(Context context) {
+            super(context);
+        }
+
+        @Override
+        public int getGravity() {
+            return Gravity.CENTER;
+        }
+
+        @Override
+        public float getTextSize() {
+            return 80;
+        }
+
+        @Override
+        public int getPaddingStart() {
+            return 100;
+        }
+
+        @Override
+        public int getPaddingTop() {
+            return 50;
+        }
+
+        @Override
+        public int getCornerRadius() {
+            return 8;
+        }
+
+        @Override
+        public int getBackgroundColor() {
+            return 0XFFFFFFFF;
+        }
+
+        @Override
+        public int getTextColor() {
+            return 0XFF05A158;
+        }
 
     }
 
@@ -269,7 +339,8 @@ public class MainActivity extends BaseActivity<NewsPresenter> implements NewsCon
 //        if (TextUtils.isEmpty(message) && okWebsocket == null) return;
 //        okWebsocket.send(message);
 //        editText.setText("");
-        loadPatch();
+//        loadPatch();
+        showToast();
     }
 
 
@@ -688,14 +759,33 @@ public class MainActivity extends BaseActivity<NewsPresenter> implements NewsCon
 
     }
 
+    long exitTime = -1L;
+    @Override
+    public boolean onKeyDown(int keyCode, KeyEvent event) {
+        if (keyCode == KeyEvent.KEYCODE_BACK
+                && event.getAction() == KeyEvent.ACTION_DOWN) {
+            if ((System.currentTimeMillis() - exitTime) > 2000) {
+                Toast.makeText(context, "再按一次退出程序", Toast.LENGTH_SHORT).show();
+                exitTime = System.currentTimeMillis();
+            } else {
+                finish();
+            }
+
+            return true;
+        }
+        return super.onKeyDown(keyCode, event);
+    }
+
     @Override
     protected void onDestroy() {
+        super.onDestroy();
         presenter.unsubscribe();
         counter.clear();
         OkEvent.getInstance().unregister(this);
-//        Intent intent = new Intent(this, NetworkService.class);
-//        stopService(intent);
-        super.onDestroy();
+        stopService(intent);
+        if (isFinishing()) {
+            Process.killProcess(Process.myPid());
+        }
     }
 
     public static void openWifi(Context context) {

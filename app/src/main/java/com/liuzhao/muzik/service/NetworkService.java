@@ -1,14 +1,21 @@
 package com.liuzhao.muzik.service;
 
+import android.app.NotificationChannel;
+import android.app.NotificationManager;
 import android.app.Service;
+import android.content.Context;
 import android.content.Intent;
+import android.os.Build;
 import android.os.Handler;
 import android.os.HandlerThread;
 import android.os.IBinder;
 import android.os.Message;
 import android.support.annotation.Nullable;
+import android.support.annotation.RequiresApi;
+import android.support.v4.app.NotificationCompat;
 import android.util.Log;
 
+import com.liuzhao.muzik.R;
 import com.liuzhao.muzik.common.OkHttpUtil;
 
 import java.util.concurrent.TimeUnit;
@@ -23,10 +30,34 @@ public class NetworkService extends Service {
     private int i = 0;
     @Override
     public void onCreate() {
+        super.onCreate();
         Log.i(TAG, "started ...");
         initHandler();
 
-        super.onCreate();
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            BootService.startForeground(this);
+
+        }
+
+    }
+
+    @RequiresApi(api = Build.VERSION_CODES.O)
+    public void setForegroundService() {
+        //设定的通知渠道名称
+        String channelName = getString(R.string.app_name);
+        //设置通知的重要程度
+        int importance = NotificationManager.IMPORTANCE_LOW;
+        //构建通知渠道
+        NotificationChannel channel = new NotificationChannel(TAG, channelName, importance);
+        channel.setDescription("description");
+        //在创建的通知渠道上发送通知
+        NotificationCompat.Builder builder = new NotificationCompat.Builder(this, TAG);
+        builder.setContentTitle("程序销毁监控"); //设置通知标题
+        //向系统注册通知渠道，注册后不能改变重要性以及其他通知行为
+        NotificationManager notificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+        notificationManager.createNotificationChannel(channel);
+        //将服务置于启动状态 NOTIFICATION_ID指的是创建的通知的ID
+        startForeground(12, builder.build());
     }
 
     private void initHandler() {
@@ -81,10 +112,12 @@ public class NetworkService extends Service {
 
     @Override
     public void onDestroy() {
+
+        super.onDestroy();
         Log.e(TAG, "destroyed ...");
         i = 0;
         workHandler.removeCallbacksAndMessages(null);
         handlerThread.quitSafely();
-        super.onDestroy();
+        stopForeground(true);
     }
 }

@@ -6,6 +6,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.support.multidex.MultiDex;
 
+import com.hjq.toast.ToastUtils;
 import com.liuzhao.muzik.database.AppDatabase;
 import com.liuzhao.muzik.tinker.log.MyLogImp;
 import com.liuzhao.muzik.tinker.util.SampleApplicationContext;
@@ -66,6 +67,8 @@ public class TinkerApplicationLike extends DefaultApplicationLike {
         appDatabase = Room.databaseBuilder(base, AppDatabase.class, Constants.DATA_PATH)
                 .allowMainThreadQueries()
                 .build();
+
+        ToastUtils.init(getApplication());
     }
 
     public void registerActivityLifecycleCallbacks(Application.ActivityLifecycleCallbacks callback) {
